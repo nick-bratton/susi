@@ -1,0 +1,15 @@
+{
+  "name": "10k-slack-bot",
+  "version": "1.0.0",
+  "description": "Node script to schedule Slack bot notifications weekly about unconfirmed hours in 10K",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Nick Bratton",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/web-api": "^5.1.0"
+  }
+}
