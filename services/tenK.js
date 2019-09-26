@@ -9,14 +9,13 @@ exports.requestOptions = {
 	headers: {
 		'cache-control': 'no-cache',
 		'content-type': 'application/json',
-		'auth': `${cred.vnext_token}`,
-		'per-page': 80,
+		'auth': `${cred.vnext_token}`
 	},
 }
 
 exports.uriToCheckWeeklyTimeEntries = () => {
-	let uri = "https://vnext-api.10000ft.com/api/v1/time_entries?from=";
-	uri += sevenDaysAgo() + "&to=" + today();
+	let uri = 'https://vnext-api.10000ft.com/api/v1/time_entries?from=';
+	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500';
 	return uri;
 }
 
@@ -30,13 +29,13 @@ exports.getUserIdsWithUnconfirmedEntries = (response) => {
 	let uniqueIds, _uniqueIds;
 	let entries = JSON.parse(response.body);
 	for (let entry in entries.data){
-		if(!entries.data[entry].is_suggestion){								// change this to check true, not false, before production
+		if(!entries.data[entry].is_suggestion){// change this to check true, not false, before production
 			ids.push(entries.data[entry].user_id);
 		}
 	}
 	// Sets intrinsically remove duplicate entries...
 	uniqueIds = new Set(ids);
-	// Bbt we want to return an array:
+	// But we want to return an array:
 	_uniqueIds = Array.from(uniqueIds);
 	return _uniqueIds
 }

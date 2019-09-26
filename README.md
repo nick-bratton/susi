@@ -22,7 +22,6 @@ In production,
 * The API end point base URL is https://api.10000ft.com/api/v1/
 * You will use a production API token obtained from the settings section in your production account.
 
-
 The following endpoints will be of use:
 
 * ### GET /api/v1/users
@@ -40,6 +39,7 @@ A better solution to the one above, would be to get unconfirmed entries for a ti
 
 # Open Tasks
 
-1. Handle [pagination](https://github.com/10Kft/10kft-api/blob/master/sections/first-things-first.md#pagination) in 10000ft responses
+1. Handle [pagination](https://github.com/10Kft/10kft-api/blob/master/sections/first-things-first.md#pagination) in 10000ft responses. Note the '&per_page=500' in the exports.uriToCheckWeeklyTimeEntries() in tenK.js. 500 was chosen as its well above what we could expect in a given week (i.e., 80 employees * 7 time entries in a week = 500 results). We should never have more than one page returned then. This is solution for the time being only. What would be better would be to handle pagination dynamically.
 2. Move out of sandboxes
 3. Use ENV instead of locally stored keys 
+4. Message interactivity (securely confirming hours on Slack)

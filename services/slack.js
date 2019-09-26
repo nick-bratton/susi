@@ -21,6 +21,6 @@ const postMessageBySlackId = async(id) => {
 	await Slack.chat.postMessage({
 		channel: `${id}`,
 		text: `Please confirm your hours on 10000ft for this week: https://app.10000ft.com/me/tracker`,
-		as_user: true // this way it comes from 'Susi' and not 'Slackbot'
-	});							// but i'm not sure exactly how/why
+		as_user: true // this way it comes from 'Susi' and not 'Slackbot', not totally sure why/how
+	});
 }
