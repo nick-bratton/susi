@@ -16,7 +16,7 @@ function main(){
 			ids = tenK.getUserIdsWithUnconfirmedEntries(response);
 		})
 		.catch(function (err) {
-			console.log('Caught error in go():' + err);
+			console.log('Caught error in main():' + err);
 		})
 		.finally(async function(){
 			let contactList = await generateContactList(ids);
