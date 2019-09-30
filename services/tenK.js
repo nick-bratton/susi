@@ -43,7 +43,6 @@ exports.getUserIdsWithUnconfirmedEntries = (response) => {
 	let entries = JSON.parse(response.body);
 	for (let entry in entries.data){
 		if(entries.data[entry].is_suggestion){
-			// console.log(entries.data[entry]);
 			ids.push(entries.data[entry].user_id);
 		}
 	}
@@ -60,6 +59,7 @@ exports.getUserEmailFrom10KUserID = (id) => {
 			rp(this.requestOptions)
 				.then(response => {
 					user = JSON.parse(response.body);
+					// console.log(user);
 				})
 				.catch(err => {
 					console.log('Error in getUserEmailBy10KUserID(): ' + err)

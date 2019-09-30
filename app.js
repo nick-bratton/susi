@@ -9,7 +9,7 @@ const slack = require('./services/slack.js')
 let interval = '*/2 * * * * *'
 // let thursdaysAtElevenAm = '0 11 * * THU'
 
-function checkUnconfirmedEntriesAndNotifyUsers(){
+function main(){
 	let ids;
 	tenK.getWeeklyTimeEntries()
 		.then(function (response) {
@@ -20,7 +20,8 @@ function checkUnconfirmedEntriesAndNotifyUsers(){
 		})
 		.finally(async function(){
 			let contactList = await generateContactList(ids);
-			messageContacts(contactList);
+			let filteredContactList = contactList.filter(Boolean); // removes empty entries (e.g., freelancers like D_Solid Visual Design)
+			messageContacts(filteredContactList);
 		})
 }
 
@@ -47,5 +48,5 @@ const messageContacts = async(emailAddresses) => {
 }
 
 new Cron(interval, function() {
-	checkUnconfirmedEntriesAndNotifyUsers();
+	main();
 }, null, true, 'Europe/Berlin');
