@@ -1,6 +1,8 @@
-const cred = require('../private/credentials.json');
+#!/usr/bin/env nodejs
+'use strict';
+require('dotenv').config()
 const { WebClient } = require('@slack/web-api');
-const Slack = new WebClient(cred.slackbot_token);
+const Slack = new WebClient(process.env.SLACK);
 
 exports.messageUserByEmailAddress = (address) => {
 	console.log(address);

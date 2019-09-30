@@ -28,8 +28,7 @@ exports.requestOptions = {
 
 exports.uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}` + 'time_entries?from=';
-	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';		// production
-	// uri += '2019-09-30&2019-10-03to&per_page=500&with_suggestions=true'											// development
+	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
 	return uri;
 }
 
@@ -48,9 +47,7 @@ exports.getUserIdsWithUnconfirmedEntries = (response) => {
 			ids.push(entries.data[entry].user_id);
 		}
 	}
-	// Sets intrinsically remove duplicate entries...
 	uniqueIds = new Set(ids);
-	// But we want to return an array:
 	_uniqueIds = Array.from(uniqueIds);
 	return _uniqueIds
 }
