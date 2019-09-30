@@ -4,8 +4,8 @@
   "description": "Node script to schedule Slack bot notifications weekly about unconfirmed hours in 10K",
   "main": "app.js",
   "scripts": {
-    "dev": "ENV=dev node app.js",
-    "pro": "ENV=pro node app.js"
+    "dev": "MODE=dev node app.js",
+    "pro": "MODE=pro node app.js"
   },
   "author": "Nick Bratton",
   "license": "ISC",
