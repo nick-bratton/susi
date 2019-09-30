@@ -1,21 +1,35 @@
+#!/usr/bin/env nodejs
+'use strict';
+require('dotenv').config()
 const rp = require('request-promise');
 
-const cred = require('../private/credentials.json');
+let baseUri = "";
+let auth = "";
+
+if (process.env.MODE == 'dev'){
+	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+	auth = process.env.VNEXT;
+}
+else if(process.env.MODE == "pro"){
+	baseUri = 'https://api.10000ft.com/api/v1/';
+	auth = process.env.TENK;
+}
 
 exports.requestOptions = {
 	method: 'GET',
 	resolveWithFullResponse: true,
-	uri: 'https://vnext-api.10000ft.com/api/v1/',
+	uri: `${baseUri}`,
 	headers: {
 		'cache-control': 'no-cache',
 		'content-type': 'application/json',
-		'auth': `${cred.vnext_token}`
+		'auth': `${auth}`
 	},
 }
 
 exports.uriToCheckWeeklyTimeEntries = () => {
-	let uri = 'https://vnext-api.10000ft.com/api/v1/time_entries?from=';
-	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500';
+	let uri = `${baseUri}` + 'time_entries?from=';
+	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';		// production
+	// uri += '2019-09-30&2019-10-03to&per_page=500&with_suggestions=true'											// development
 	return uri;
 }
 
@@ -29,7 +43,8 @@ exports.getUserIdsWithUnconfirmedEntries = (response) => {
 	let uniqueIds, _uniqueIds;
 	let entries = JSON.parse(response.body);
 	for (let entry in entries.data){
-		if(!entries.data[entry].is_suggestion){// change this to check true, not false, before production
+		if(entries.data[entry].is_suggestion){
+			// console.log(entries.data[entry]);
 			ids.push(entries.data[entry].user_id);
 		}
 	}
@@ -41,7 +56,7 @@ exports.getUserIdsWithUnconfirmedEntries = (response) => {
 }
 
 exports.getUserEmailFrom10KUserID = (id) => {
-	this.requestOptions.uri = `https://vnext-api.10000ft.com/api/v1/users/${id}`;
+	this.requestOptions.uri = `${baseUri}users/${id}`;
 	let user;
 	return new Promise(
 		(resolve,reject) => {

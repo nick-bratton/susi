@@ -1,12 +1,15 @@
 #!/usr/bin/env nodejs
 'use strict';
+require('dotenv').config()
 
-// require('dotenv').config()
 const Cron = require('cron').CronJob;
 const tenK = require('./services/tenK.js')
 const slack = require('./services/slack.js')
 
-function go(){
+let interval = '*/2 * * * * *'
+// let thursdaysAtElevenAm = '0 11 * * THU'
+
+function checkUnconfirmedEntriesAndNotifyUsers(){
 	let ids;
 	tenK.getWeeklyTimeEntries()
 		.then(function (response) {
@@ -43,7 +46,6 @@ const messageContacts = async(emailAddresses) => {
 		});
 }
 
-// change interval to 11AM every Thursday...'0 11 * * THU'
-new Cron('*/2 * * * * *', function() {
-	go();
+new Cron(interval, function() {
+	checkUnconfirmedEntriesAndNotifyUsers();
 }, null, true, 'Europe/Berlin');

@@ -3,6 +3,7 @@ const { WebClient } = require('@slack/web-api');
 const Slack = new WebClient(cred.slackbot_token);
 
 exports.messageUserByEmailAddress = (address) => {
+	console.log(address);
 	return new Promise(async function(resolve, reject){
 		await Slack.users.lookupByEmail({
 			email: `${address}`
@@ -21,6 +22,22 @@ const postMessageBySlackId = async(id) => {
 	await Slack.chat.postMessage({
 		channel: `${id}`,
 		text: `Please confirm your hours on 10000ft for this week: https://app.10000ft.com/me/tracker`,
-		as_user: true // this way it comes from 'Susi' and not 'Slackbot', not totally sure why/how
+		as_user: true,
+		blocks: [
+			{
+				"type": "actions",
+				"elements": [
+					{
+						"type": "button",
+						"text": {
+							"type": "plain_text",
+							"text": "Button",
+							"emoji": true
+						},
+						"value": "click_me_123"
+					}
+				]
+			}
+		]
 	});
 }

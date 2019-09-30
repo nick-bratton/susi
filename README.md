@@ -36,6 +36,10 @@ NOTE: Suggested time entries are not returned by the API by default and must be 
 
 A better solution to the one above, would be to get unconfirmed entries for a time period and for each one, store the *user_id* locally. Then, look up the email addresses associated with those *user_id*s and then have the Slack bot ping them.
 
+* ### PUT /api/v1/users/<user_id>/time_entries/id
+
+Let's see if we can confirm time entries by hitting this endpoint. 
+
 
 # Open Tasks
 
@@ -43,3 +47,4 @@ A better solution to the one above, would be to get unconfirmed entries for a ti
 2. Move out of sandboxes
 3. Use ENV instead of locally stored keys 
 4. Message interactivity (securely confirming hours on Slack)
+    * However, it seems we [may not be able](https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md#time-entries-and-resource-only-users) to confirm time entries from the API. 
