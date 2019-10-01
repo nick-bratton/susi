@@ -12,13 +12,12 @@ else if(process.env.MODE == "pro"){
 	Slack = new WebClient(process.env.SLACK_PRO);
 }
 
-exports.sendUserDM = (payload) => {
-	console.log(payload[1]);
+exports.findAndMessageUser = (payload) => {
 	return new Promise(async function(resolve,reject){
 		await Slack.users.lookupByEmail({
 			email: `${payload[1]}`
 		}).then(user => {
-			postMessageWithPayload(user.user.id, payload);	// replace this or give an extra arg for the payload
+			postMessageWithPayload(user.user.id, payload);
 			resolve(user.user.id);
 		})
 		.catch(err => {
@@ -27,51 +26,46 @@ exports.sendUserDM = (payload) => {
 	})
 }
 
-exports.messageUserByEmailAddress = (address) => {
-	// console.log(address);
-	return new Promise(async function(resolve, reject){
-		await Slack.users.lookupByEmail({
-			email: `${address}`
-		}).then(user => {
-			postMessageBySlackId(user.user.id);
-			resolve(user.user.id);
-		})
-		.catch(err => {
-			console.log('Error in getSlackIdByEmailAddress(): ' + err);
-			reject(err);
-		})
-	})
-}
-
 const postMessageWithPayload = async(id, payload) => {
+
+	let listOfUnconfirmedEntries = '• ';
+
+	for (let date of payload[2]){
+		listOfUnconfirmedEntries += date + '\n• ';
+	}
+	
+	listOfUnconfirmedEntries = listOfUnconfirmedEntries.slice(0,-3);
+
+	console.log(listOfUnconfirmedEntries);
+
 	await Slack.chat.postMessage({
 		channel: `${id}`,
-		text: `Please confirm your hours on 10000ft. You have unconfirmed time entries on the following days: ${payload[2]}`,
-		as_user: true
+		as_user: true,
+		"blocks": [
+			{
+				"type":"section",
+				"text": {
+					"type": "plain_text",
+					"text": "Please confirm your hours on 10000ft. You have unconfirmed time entries on the following days:"
+				}
+			},
+			{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": `${listOfUnconfirmedEntries}`
+				}
+			}
+		]
 	});
 }
+
 
 const postSimpleMessage = async(id) => {
 	await Slack.chat.postMessage({
 		channel: `${id}`,
 		text: `Please confirm your hours on 10000ft for this week: https://app.10000ft.com/me/tracker`,
-		as_user: true,
-		blocks: [
-			{
-				"type": "actions",
-				"elements": [
-					{
-						"type": "button",
-						"text": {
-							"type": "plain_text",
-							"text": "Button",
-							"emoji": true
-						},
-						"value": "click_me_123"
-					}
-				]
-			}
-		]
+		as_user: true
 	});
 }
 

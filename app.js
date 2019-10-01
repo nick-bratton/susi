@@ -39,13 +39,7 @@ function main(){
 }
 
 const messageContacts = async(payloads) => {
-	// map the payloads instead of the email addresses
-	// so pass payload to slack.messageUser
-	// and in that function (in slack service)
-	// parse out the email address. 
-	// so here there should no longer be anything about email address, 
-	// just payloads
-	await Promise.all(payloads.map(payload => slack.sendUserDM(payload)))
+	await Promise.all(payloads.map(payload => slack.findAndMessageUser(payload)))
 		.then(slackUserIds => {
 			console.log('Notified Slack users: ' + slackUserIds);
 		})
