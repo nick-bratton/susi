@@ -38,17 +38,49 @@ exports.getWeeklyTimeEntries = () => {
 }
 
 exports.getUserIdsWithUnconfirmedEntries = (response) => {
-	let ids = [];
-	let uniqueIds, _uniqueIds;
+
+	let ids = [], uniqueIds, _uniqueIds;
 	let entries = JSON.parse(response.body);
+
 	for (let entry in entries.data){
 		if(entries.data[entry].is_suggestion){
 			ids.push(entries.data[entry].user_id);
 		}
 	}
+
+	// filter out duplicates:
 	uniqueIds = new Set(ids);
 	_uniqueIds = Array.from(uniqueIds);
-	return _uniqueIds
+	return _uniqueIds;
+}
+
+exports.getUserIdsAndTheirUnconfirmedDates = (response) => {
+	let ids = [], uniqueIds, _uniqueIds;
+	let idsAndUnconfirmedDates = [];
+	let payloads = [];
+
+	let entries = JSON.parse(response.body);
+
+	for (let entry in entries.data){
+		if(entries.data[entry].is_suggestion){
+			ids.push(entries.data[entry].user_id);
+			idsAndUnconfirmedDates.push( [ entries.data[entry].user_id, entries.data[entry].date ] )
+		}
+	}
+	// filter out duplicates:
+	uniqueIds = new Set(ids);
+	_uniqueIds = Array.from(uniqueIds);
+
+	for (let id of _uniqueIds){
+		let unconfirmedDates = []
+		for (let entry of idsAndUnconfirmedDates){
+			if (entry[0] == id){
+				unconfirmedDates.push(entry[1]);
+			}
+		}
+		payloads.push([id, unconfirmedDates]);
+	}
+	return payloads;
 }
 
 exports.getUserEmailFrom10KUserID = (id) => {
@@ -59,7 +91,6 @@ exports.getUserEmailFrom10KUserID = (id) => {
 			rp(this.requestOptions)
 				.then(response => {
 					user = JSON.parse(response.body);
-					// console.log(user);
 				})
 				.catch(err => {
 					console.log('Error in getUserEmailBy10KUserID(): ' + err)

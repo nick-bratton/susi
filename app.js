@@ -19,6 +19,7 @@ function main(){
 	let ids;
 	tenK.getWeeklyTimeEntries()
 		.then(function (response) {
+			console.log('payloads for slack:', tenK.getUserIdsAndTheirUnconfirmedDates(response));
 			ids = tenK.getUserIdsWithUnconfirmedEntries(response);
 		})
 		.catch(function (err) {
