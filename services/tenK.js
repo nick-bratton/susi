@@ -54,7 +54,7 @@ exports.getUserIdsWithUnconfirmedEntries = (response) => {
 	return _uniqueIds;
 }
 
-exports.getUserIdsAndTheirUnconfirmedDates = (response) => {
+exports.getUserIdsAndTheirUnconfirmedDates = async(response) => {
 	let ids = [], uniqueIds, _uniqueIds;
 	let idsAndUnconfirmedDates = [];
 	let payloads = [];
@@ -78,12 +78,16 @@ exports.getUserIdsAndTheirUnconfirmedDates = (response) => {
 				unconfirmedDates.push(entry[1]);
 			}
 		}
-		payloads.push([id, unconfirmedDates]);
+
+		let emailAddress = await this.getUserEmailFrom10KUserID(id);
+		// console.log(emailAddress);
+		payloads.push([id, emailAddress, unconfirmedDates]);
 	}
+	// console.log(payloads);
 	return payloads;
 }
 
-exports.getUserEmailFrom10KUserID = (id) => {
+exports.getUserEmailFrom10KUserID = async(id) => {
 	this.requestOptions.uri = `${baseUri}users/${id}`;
 	let user;
 	return new Promise(

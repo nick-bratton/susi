@@ -16,34 +16,36 @@ else if(process.env.MODE == "pro"){
 }
 
 function main(){
-	let ids;
+	let ids, payloads;
 	tenK.getWeeklyTimeEntries()
-		.then(function (response) {
-			console.log('payloads for slack:', tenK.getUserIdsAndTheirUnconfirmedDates(response));
-			ids = tenK.getUserIdsWithUnconfirmedEntries(response);
+		.then(async function (response) {
+			payloads =  await tenK.getUserIdsAndTheirUnconfirmedDates(response);
+			// ids = tenK.getUserIdsWithUnconfirmedEntries(response);
 		})
 		.catch(function (err) {
 			console.log('Caught error in main():' + err);
 		})
 		.finally(async function(){
-			let contactList = await generateContactList(ids);
-			let filteredContactList = contactList.filter(Boolean); // removes empty entries (e.g., freelancers like D_Solid Visual Design)
-			messageContacts(filteredContactList);
+			// let contactList = await generateContactList(ids);
+			// let filteredContactList = contactList.filter(Boolean); // removes empty entries (e.g., freelancers like D_Solid Visual Design)
+			// messageContacts(filteredContactList);
+
+			console.log(payloads);
+			messageContacts(payloads);
+
+
+
 		})
 }
 
-const generateContactList = async(ids) => {
-	return await Promise.all(ids.map(id => tenK.getUserEmailFrom10KUserID(id)))
-		.then(emailAddressList => {
-			return emailAddressList;
-		})
-		.catch(err => {
-			console.log('Error in generateContactList(): ' + err)
-		})
-}
-
-const messageContacts = async(emailAddresses) => {
-	await Promise.all(emailAddresses.map(emailAddress => slack.messageUserByEmailAddress(emailAddress)))
+const messageContacts = async(payloads) => {
+	// map the payloads instead of the email addresses
+	// so pass payload to slack.messageUser
+	// and in that function (in slack service)
+	// parse out the email address. 
+	// so here there should no longer be anything about email address, 
+	// just payloads
+	await Promise.all(payloads.map(payload => slack.sendUserDM(payload)))
 		.then(slackUserIds => {
 			console.log('Notified Slack users: ' + slackUserIds);
 		})
@@ -53,6 +55,33 @@ const messageContacts = async(emailAddresses) => {
 		.finally(function(){
 		});
 }
+
+const generateContactList = async(ids) => {
+	return await Promise.all(ids.map(id => 
+		tenK.getUserEmailFrom10KUserID(id)
+		)
+	)
+		.then(emailAddressList => {
+			return emailAddressList;
+		})
+		.catch(err => {
+			console.log('Error in generateContactList(): ' + err)
+		})
+}
+
+
+
+// const messageContacts = async(emailAddresses) => {
+// 	await Promise.all(emailAddresses.map(emailAddress => slack.messageUserByEmailAddress(emailAddress)))
+// 		.then(slackUserIds => {
+// 			console.log('Notified Slack users: ' + slackUserIds);
+// 		})
+// 		.catch(err => {
+// 			console.log('Error in notifyContacts(): ' + err)
+// 		})
+// 		.finally(function(){
+// 		});
+// }
 
 new Cron(interval, function() {
 	main();
