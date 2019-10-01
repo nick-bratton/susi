@@ -52,7 +52,7 @@ const postMessageBySlackId = async(id) => {
 	});
 }
 
-exports.testIxds = async(id) => {
+exports.postMessageTest = async(id) => {
 	await Slack.chat.postMessage({
 		channel: `${id}`,
 		text: `Please confirm your hours on 10000ft for this week: https://app.10000ft.com/me/tracker`,
