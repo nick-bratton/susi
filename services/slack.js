@@ -36,8 +36,6 @@ const postMessageWithPayload = async(id, payload) => {
 	
 	listOfUnconfirmedEntries = listOfUnconfirmedEntries.slice(0,-3);
 
-	console.log(listOfUnconfirmedEntries);
-
 	await Slack.chat.postMessage({
 		channel: `${id}`,
 		as_user: true,

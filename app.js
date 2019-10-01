@@ -16,7 +16,7 @@ else if(process.env.MODE == "pro"){
 }
 
 function main(){
-	let ids, payloads;
+	let payloads;
 	tenK.getWeeklyTimeEntries()
 		.then(async function (response) {
 			payloads =  await tenK.getUserIdsAndTheirUnconfirmedDates(response);
@@ -29,12 +29,7 @@ function main(){
 			// let contactList = await generateContactList(ids);
 			// let filteredContactList = contactList.filter(Boolean); // removes empty entries (e.g., freelancers like D_Solid Visual Design)
 			// messageContacts(filteredContactList);
-
-			console.log(payloads);
 			messageContacts(payloads);
-
-
-
 		})
 }
 
@@ -50,6 +45,18 @@ const messageContacts = async(payloads) => {
 		});
 }
 
+// const messageContacts = async(emailAddresses) => {
+// 	await Promise.all(emailAddresses.map(emailAddress => slack.messageUserByEmailAddress(emailAddress)))
+// 		.then(slackUserIds => {
+// 			console.log('Notified Slack users: ' + slackUserIds);
+// 		})
+// 		.catch(err => {
+// 			console.log('Error in notifyContacts(): ' + err)
+// 		})
+// 		.finally(function(){
+// 		});
+// }
+
 const generateContactList = async(ids) => {
 	return await Promise.all(ids.map(id => 
 		tenK.getUserEmailFrom10KUserID(id)
@@ -62,20 +69,6 @@ const generateContactList = async(ids) => {
 			console.log('Error in generateContactList(): ' + err)
 		})
 }
-
-
-
-// const messageContacts = async(emailAddresses) => {
-// 	await Promise.all(emailAddresses.map(emailAddress => slack.messageUserByEmailAddress(emailAddress)))
-// 		.then(slackUserIds => {
-// 			console.log('Notified Slack users: ' + slackUserIds);
-// 		})
-// 		.catch(err => {
-// 			console.log('Error in notifyContacts(): ' + err)
-// 		})
-// 		.finally(function(){
-// 		});
-// }
 
 new Cron(interval, function() {
 	main();
