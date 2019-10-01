@@ -55,4 +55,5 @@ const messageContacts = async(emailAddresses) => {
 
 new Cron(interval, function() {
 	main();
+	// slack.postMessageTest('U73U37JKS');
 }, null, true, 'Europe/Berlin');
