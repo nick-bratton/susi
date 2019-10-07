@@ -10,12 +10,12 @@ if (process.env.MODE == 'dev'){
 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
 	auth = process.env.VNEXT;
 }
-else if(process.env.MODE == "pro" || process.env.MODE == 'pro_beta'){
+else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
 	baseUri = 'https://api.10000ft.com/api/v1/';
 	auth = process.env.TENK;
 }
 
-const betaModeEmailWhitelist = [ 'nicholas.bratton@ixds.com' ]
+const betaModeEmailWhitelist = [ 'nicholas.bratton@ixds.com', 'constantin.schmidt@ixds.com', 'marten.biehl@ixds.com', 'fabian.opitz@ixds.com', 'Leonardo.Amico@ixds.com', 'michael.schade@ixds.com', 'thomas.geissl@ixds.com']
 
 exports.requestOptions = {
 	method: 'GET',
@@ -87,7 +87,7 @@ exports.getUserIdsAndTheirUnconfirmedDates = async(response) => {
 
 		if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 			if (process.env.MODE == 'pro_beta'){
-				if (betaModeEmailWhitelist.contains(emailAddress)){
+				if (betaModeEmailWhitelist.includes(emailAddress)){
 					payloads.push([id, emailAddress, _uniqueUnconfirmedDates]);
 				}
 			}

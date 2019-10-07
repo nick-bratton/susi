@@ -15,7 +15,8 @@ else if (process.env.MODE == 'pro'){
 	interval = '0 10 * * MON';
 }
 else if (process.env.MODE == 'pro_beta'){
-	interval = '0 16 * * MON-THU';
+	interval = '0 15 * * MON-THU';
+	// interval = '*/30 * * * * *';
 }
 
 function main(){
