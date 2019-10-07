@@ -67,23 +67,26 @@ exports.getUserIdsAndTheirUnconfirmedDates = async(response) => {
 			idsAndUnconfirmedDates.push( [ entries.data[entry].user_id, entries.data[entry].date ] )
 		}
 	}
-	// filter out duplicates:
-	uniqueIds = new Set(ids);
+
+	uniqueIds = new Set(ids); // filter out duplicates
 	_uniqueIds = Array.from(uniqueIds);
 
 	for (let id of _uniqueIds){
-		let unconfirmedDates = []
+		let unconfirmedDates = [], uniqueUnconfirmedDates, _uniqueUnconfirmedDates;
 		for (let entry of idsAndUnconfirmedDates){
 			if (entry[0] == id){
 				unconfirmedDates.push(entry[1]);
 			}
+			uniqueUnconfirmedDates = new Set(unconfirmedDates); // filter out duplicates
+			_uniqueUnconfirmedDates = Array.from(uniqueUnconfirmedDates);
 		}
 
 		let emailAddress = await this.getUserEmailFrom10KUserID(id);
-		// console.log(emailAddress);
-		payloads.push([id, emailAddress, unconfirmedDates]);
+
+		if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
+			payloads.push([id, emailAddress, _uniqueUnconfirmedDates]);
+		}
 	}
-	// console.log(payloads);
 	return payloads;
 }
 
