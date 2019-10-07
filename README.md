@@ -21,3 +21,5 @@ These tokens should be provided in a .env file in the same directory containing 
 2. Install, configure, and launch a process manager like [PM2](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-18-04#step-3-%E2%80%94-installing-pm2) or [forever](https://www.npmjs.com/package/forever). 
 
 3. Convert arrays to objects with keys to avoid hardcoding indices
+
+4. Make sure that email addresses come in the payloads for users or else Promise.all will reject in messageContacts as certain 10000ft users do not have associated email addresses (i.e., freelancers).
