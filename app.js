@@ -11,9 +11,11 @@ let interval = ''
 if (process.env.MODE == 'dev'){
 	interval = '*/5 * * * * *'
 }
-else if(process.env.MODE == "pro"){
-	// interval = '0 10 * * MON';
-	interval = '*/30 * * * * *'
+else if (process.env.MODE == 'pro'){
+	interval = '0 10 * * MON';
+}
+else if (process.env.MODE == 'pro_beta'){
+	interval = '0 16 * * MON-THU';
 }
 
 function main(){
@@ -44,5 +46,4 @@ const messageContacts = async(payloads) => {
 
 new Cron(interval, function() {
 	main();
-	// slack.postMessageTest('U73U37JKS');
 }, null, true, 'Europe/Berlin');

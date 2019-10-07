@@ -10,10 +10,12 @@ if (process.env.MODE == 'dev'){
 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
 	auth = process.env.VNEXT;
 }
-else if(process.env.MODE == "pro"){
+else if(process.env.MODE == "pro" || process.env.MODE == 'pro_beta'){
 	baseUri = 'https://api.10000ft.com/api/v1/';
 	auth = process.env.TENK;
 }
+
+const betaModeEmailWhitelist = [ 'nicholas.bratton@ixds.com' ]
 
 exports.requestOptions = {
 	method: 'GET',
@@ -84,10 +86,20 @@ exports.getUserIdsAndTheirUnconfirmedDates = async(response) => {
 		let emailAddress = await this.getUserEmailFrom10KUserID(id);
 
 		if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
-			payloads.push([id, emailAddress, _uniqueUnconfirmedDates]);
+			if (process.env.MODE == 'pro_beta'){
+				if (betaModeEmailWhitelist.contains(emailAddress)){
+					payloads.push([id, emailAddress, _uniqueUnconfirmedDates]);
+				}
+			}
+			else { // MODE=pro || MODE=dev
+				payloads.push([id, emailAddress, _uniqueUnconfirmedDates]);
+			}
 		}
+
 	}
+
 	return payloads;
+
 }
 
 exports.getUserEmailFrom10KUserID = async(id) => {

@@ -8,7 +8,7 @@ let Slack;
 if (process.env.MODE == 'dev'){
 	Slack = new WebClient(process.env.SLACK_DEV);
 }
-else if(process.env.MODE == "pro"){
+else if(process.env.MODE == "pro" || process.env.MODE == 'pro_beta'){
 	Slack = new WebClient(process.env.SLACK_PRO);
 }
 
@@ -53,39 +53,6 @@ const postMessageWithPayload = async(id, payload) => {
 				"type": "mrkdwn",
 				"text": `${listOfUnconfirmedEntries}`
 				}
-			}
-		]
-	});
-}
-
-
-const postSimpleMessage = async(id) => {
-	await Slack.chat.postMessage({
-		channel: `${id}`,
-		text: `Please confirm your hours on 10,000ft for this week: https://app.10000ft.com/me/tracker`,
-		as_user: true
-	});
-}
-
-exports.postMessageTest = async(id) => {
-	await Slack.chat.postMessage({
-		channel: `${id}`,
-		text: `Please confirm your hours on 10000ft for this week: https://app.10000ft.com/me/tracker`,
-		as_user: true,
-		blocks: [
-			{
-				"type": "actions",
-				"elements": [
-					{
-						"type": "button",
-						"text": {
-							"type": "plain_text",
-							"text": "Button",
-							"emoji": true
-						},
-						"value": "click_me_123"
-					}
-				]
 			}
 		]
 	});
