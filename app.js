@@ -29,7 +29,7 @@ function main(){
 			console.log('Caught error in main():' + err);
 		})
 		.finally(async function(){
-			messageContacts(payloads);
+			// messageContacts(payloads);
 		})
 }
 

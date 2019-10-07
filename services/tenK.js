@@ -3,6 +3,8 @@
 require('dotenv').config()
 const rp = require('request-promise');
 
+const whitelist = require('../whitelist.js');
+
 let baseUri = "";
 let auth = "";
 
@@ -14,8 +16,6 @@ else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
 	baseUri = 'https://api.10000ft.com/api/v1/';
 	auth = process.env.TENK;
 }
-
-const betaModeEmailWhitelist = [ 'nicholas.bratton@ixds.com', 'constantin.schmidt@ixds.com', 'marten.biehl@ixds.com', 'fabian.opitz@ixds.com', 'Leonardo.Amico@ixds.com', 'michael.schade@ixds.com', 'thomas.geissl@ixds.com']
 
 exports.requestOptions = {
 	method: 'GET',
@@ -87,7 +87,7 @@ exports.getUserIdsAndTheirUnconfirmedDates = async(response) => {
 
 		if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 			if (process.env.MODE == 'pro_beta'){
-				if (betaModeEmailWhitelist.includes(emailAddress)){
+				if (whitelist.emails.includes(emailAddress)){
 					payloads.push([id, emailAddress, _uniqueUnconfirmedDates]);
 				}
 			}
