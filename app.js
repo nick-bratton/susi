@@ -15,8 +15,8 @@ else if (process.env.MODE == 'pro'){
 	interval = '0 10 * * MON';
 }
 else if (process.env.MODE == 'pro_beta'){
-	interval = '0 15 * * MON-THU';
-	// interval = '*/30 * * * * *';
+	// interval = '0 15 * * MON-THU';
+	interval = '*/30 * * * * *';
 }
 
 function main(){
@@ -29,7 +29,7 @@ function main(){
 			console.log('Caught error in main():' + err);
 		})
 		.finally(async function(){
-			// messageContacts(payloads);
+			messageContacts(payloads);
 		})
 }
 
