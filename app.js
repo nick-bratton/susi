@@ -34,6 +34,10 @@ function main(){
 }
 
 const messageContacts = async(payloads) => {
+
+	// make sure there's an associated email address 
+	// like what we did above with contactList.filter(Boolean)
+
 	await Promise.all(payloads.map(payload => slack.findAndMessageUser(payload)))
 		.then(slackUserIds => {
 			console.log('Notified Slack users: ' + slackUserIds);

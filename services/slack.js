@@ -21,7 +21,7 @@ exports.findAndMessageUser = (payload) => {
 			resolve(user.user.id);
 		})
 		.catch(err => {
-			console.log('Error in sendUserDM(): ' + err);
+			console.log('Error in findAndMessageUser(): ' + err);
 		})
 	})
 }
