@@ -43,8 +43,8 @@ const postMessageWithPayload = async(id, payload) => {
 			{
 				"type":"section",
 				"text": {
-					"type": "plain_text",
-					"text": "Please confirm your hours on 10000ft. You have unconfirmed time entries on the following days:"
+					"type": "mrkdwn",
+					"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
 				}
 			},
 			{
@@ -62,7 +62,7 @@ const postMessageWithPayload = async(id, payload) => {
 const postSimpleMessage = async(id) => {
 	await Slack.chat.postMessage({
 		channel: `${id}`,
-		text: `Please confirm your hours on 10000ft for this week: https://app.10000ft.com/me/tracker`,
+		text: `Please confirm your hours on 10,000ft for this week: https://app.10000ft.com/me/tracker`,
 		as_user: true
 	});
 }
