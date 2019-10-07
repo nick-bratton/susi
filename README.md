@@ -2,7 +2,7 @@
 
 This project uses a few node modules so make sure to run npm install.
 
-THere are a couple startup scripts, one for a development environment using 10000Ft's playground V-Next, and another for production use with 10000Ft itself. These can be respectively launched by running:
+There are three startup scripts, one for a development environment using 10000Ft's playground V-Next, and two for production (and production-beta) use with 10000Ft itself. These can be respectively launched by running:
 
 `npm run dev`
 
@@ -10,9 +10,15 @@ or
 
 `npm run pro`
 
-The differences affect the timing of the Cron job to execute the main() JavaScript in app.js (in dev mode it's every 5 seconds, in pro mode it's every Thursday at 14:00). Also affected are the API endpoints in 10000Ft and the tokens used in authorizing both requests to 10000Ft and Slack.
+or 
+
+`npm run beta`
+
+The differences affect the timing of the Cron job to execute the main() JavaScript in app.js (in dev mode it's every 5 seconds, in pro mode it's every Monday at 10:00, and in pro_beta mode it's Mon-Thu at 16:00). Also affected are the API endpoints in 10000Ft and the tokens used in authorizing both requests to 10000Ft and Slack.
 
 These tokens should be provided in a .env file in the same directory containing app.js. See .env.example for how this file should look like. 
+
+Another difference to note is that, in the beta mode, email addresses returned from 10000ft will be checked against a local whitelist before the bot sends messages.
 
 # Open Tasks
 
@@ -21,5 +27,3 @@ These tokens should be provided in a .env file in the same directory containing 
 2. Install, configure, and launch a process manager like [PM2](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-18-04#step-3-%E2%80%94-installing-pm2) or [forever](https://www.npmjs.com/package/forever). 
 
 3. Convert arrays to objects with keys to avoid hardcoding indices
-
-4. Make sure that email addresses come in the payloads for users or else Promise.all will reject in messageContacts as certain 10000ft users do not have associated email addresses (i.e., freelancers).
