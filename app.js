@@ -9,20 +9,24 @@ const slack = require('./services/slack.js')
 let interval = ''
 
 if (process.env.MODE == 'dev'){
-	interval = '*/5 * * * * *'
+	interval = '*/5 * * * * *';
 }
 else if (process.env.MODE == 'pro'){
 	interval = '0 10 * * MON';
 }
 else if (process.env.MODE == 'pro_beta'){
-	interval = '0 16 * * MON-THU';
+	interval = '*/5 * * * * *';
+	// interval = '0 16 * * MON-THU';
 }
 
 function main(){
 	let payloads;
 	tenK.getWeeklyTimeEntries()
 		.then(async function (response) {
-			payloads =  await tenK.getUserIdsAndTheirUnconfirmedDates(response);
+			// payloads =  await tenK.getUserIdsAndTheirUnconfirmedDates(response);
+			let r = JSON.parse(response.body);
+			payloads = await tenK.filterEntries(r.data);
+			
 		})
 		.catch(function (err) {
 			console.log('Caught error in main():' + err);

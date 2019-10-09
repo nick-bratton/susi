@@ -3,8 +3,6 @@
 require('dotenv').config()
 const rp = require('request-promise');
 
-const whitelist = require('../whitelist.js');
-
 let baseUri = '';
 let auth = '';
 
@@ -38,7 +36,7 @@ let sevenDaysAgo = () => {
 	return [year, month, day].join('-');
 }
 
-exports.requestOptions = {
+let requestOptions = {
 	method: 'GET',
 	resolveWithFullResponse: true,
 	uri: `${baseUri}`,
@@ -49,18 +47,13 @@ exports.requestOptions = {
 	},
 }
 
-exports.uriToCheckWeeklyTimeEntries = () => {
+let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}` + 'time_entries?from=';
 	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
 	return uri;
 }
 
-exports.getWeeklyTimeEntries = () => {
-	this.requestOptions.uri = this.uriToCheckWeeklyTimeEntries();
-	return rp(this.requestOptions)
-}
-
-exports.getUserEmailFrom10KUserID = async(id) => {
+const getUserEmailFrom10KUserID = async(id) => {
 	this.requestOptions.uri = `${baseUri}users/${id}`;
 	let user;
 	return new Promise(
@@ -78,4 +71,68 @@ exports.getUserEmailFrom10KUserID = async(id) => {
 				})
 		}
 	)
+}
+
+exports.getWeeklyTimeEntries = () => {
+	requestOptions.uri = uriToCheckWeeklyTimeEntries();
+	return rp(requestOptions)
+}
+
+const getActiveIds = (weeklyEntries) => {
+	let unfilteredIds = [];
+	for (let e in weeklyEntries){
+		unfilteredIds.push(weeklyEntries[e].user_id);
+	}
+	let filteredIds = new Set(unfilteredIds);
+	let activeIds = Array.from(filteredIds);
+	return activeIds;
+}
+
+const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
+	let weeklySuggestions = [];
+	let weeklyConfirmations = [];
+	let suggestionsAndConfirmations = {};
+	for (let e in weeklyEntries){
+		if (weeklyEntries[e].is_suggestion === true){
+			weeklySuggestions.push(weeklyEntries[e]);
+		}
+		else {
+			weeklyConfirmations.push(weeklyEntries[e]);
+		}
+	}
+	suggestionsAndConfirmations.suggestions = weeklySuggestions;
+	suggestionsAndConfirmations.confirmations = weeklyConfirmations;
+	return suggestionsAndConfirmations;
+}
+
+
+exports.filterEntries = async(weeklyEntries) => {
+	let activeIds = getActiveIds(weeklyEntries);
+	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
+
+	let suggestionIndentifiers = [];
+	let confirmationIndentifiers = [];
+	let unconfirmedEntries = [];
+
+	for (let s in suggestionsAndConfirmations.suggestions){
+		let suggestion = suggestionsAndConfirmations.suggestions[s];
+		let suggestionIndentifier = {};
+		suggestionIndentifier.date = suggestion.date;
+		suggestionIndentifier.user_id = suggestion.user_id;
+		suggestionIndentifier.assignable_id = suggestion.assignable_id;
+		suggestionIndentifiers.push(suggestionIndentifier);
+	}
+	
+	for (let c in suggestionsAndConfirmations.confirmations){
+		let confirmation = suggestionsAndConfirmations.confirmations[c];
+		let confirmationIndentifier = {};
+		confirmationIndentifier.date = confirmation.date;
+		confirmationIndentifier.user_id = confirmation.user_id;
+		confirmationIndentifier.assignable_id = confirmation.assignable_id;
+		confirmationIndentifiers.push(confirmationIndentifier);
+	}
+
+	
+
+	console.log(unconfirmedEntries);
 }
