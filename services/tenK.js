@@ -2,6 +2,7 @@
 'use strict';
 require('dotenv').config()
 const rp = require('request-promise');
+const _ = require('lodash');
 
 let baseUri = '';
 let auth = '';
@@ -40,6 +41,20 @@ let requestOptions = {
 	method: 'GET',
 	resolveWithFullResponse: true,
 	uri: `${baseUri}`,
+	headers: {
+		'cache-control': 'no-store',
+		'content-type': 'application/json',
+		'auth': `${auth}`
+	},
+}
+
+let testUri = 'https://api.10000ft.com/api/v1/api/v1/users/272229/time_entries?from=';
+testUri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
+
+let testReqOptions = {
+	method: 'GET',
+	resolveWithFullResponse: true,
+	uri: `${testUri}`,
 	headers: {
 		'cache-control': 'no-store',
 		'content-type': 'application/json',
@@ -89,11 +104,12 @@ const getActiveIds = (weeklyEntries) => {
 }
 
 const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
+	console.log('Total Weekly Entries: ' + Object.keys(weeklyEntries).length);
 	let weeklySuggestions = [];
 	let weeklyConfirmations = [];
 	let suggestionsAndConfirmations = {};
 	for (let e in weeklyEntries){
-		if (weeklyEntries[e].is_suggestion === true){
+		if (weeklyEntries[e].is_suggestion == true){
 			weeklySuggestions.push(weeklyEntries[e]);
 		}
 		else {
@@ -107,12 +123,12 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 
 
 exports.filterEntries = async(weeklyEntries) => {
-	let activeIds = getActiveIds(weeklyEntries);
+	// let activeIds = getActiveIds(weeklyEntries);
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 
 	let suggestionIndentifiers = [];
 	let confirmationIndentifiers = [];
-	let unconfirmedEntries = [];
+	// let indexesOfConfirmedSuggestions = [];
 
 	for (let s in suggestionsAndConfirmations.suggestions){
 		let suggestion = suggestionsAndConfirmations.suggestions[s];
@@ -132,7 +148,10 @@ exports.filterEntries = async(weeklyEntries) => {
 		confirmationIndentifiers.push(confirmationIndentifier);
 	}
 
-	
+	let total = suggestionIndentifiers.length + confirmationIndentifiers.length;
+	console.log('Suggestions: ' + suggestionIndentifiers.length + '; Confirmations: ' + confirmationIndentifiers.length + '; Total: ' + total);
 
-	console.log(unconfirmedEntries);
+	let unconfirmedEntries = _.differenceWith(suggestionIndentifiers, confirmationIndentifiers, _.isEqual);
+	console.log('Amt of unconfirmed entries: ' + unconfirmedEntries.length);
+
 }

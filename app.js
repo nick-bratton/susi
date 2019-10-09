@@ -26,13 +26,13 @@ function main(){
 			// payloads =  await tenK.getUserIdsAndTheirUnconfirmedDates(response);
 			let r = JSON.parse(response.body);
 			payloads = await tenK.filterEntries(r.data);
-			
+
 		})
 		.catch(function (err) {
 			console.log('Caught error in main():' + err);
 		})
 		.finally(async function(){
-			messageContacts(payloads);
+			// messageContacts(payloads);
 		})
 }
 
