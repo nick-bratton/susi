@@ -154,4 +154,19 @@ exports.filterEntries = async(weeklyEntries) => {
 	let unconfirmedEntries = _.differenceWith(suggestionIndentifiers, confirmationIndentifiers, _.isEqual);
 	console.log('Amt of unconfirmed entries: ' + unconfirmedEntries.length);
 
+	console.log('Unconfirmed entries: ');
+	for (let e in unconfirmedEntries){
+		console.log(unconfirmedEntries[e]);
+	}
+
+	// write separate function for constructing the payloads
+	// which includes getting the email addresses
+	// call it explicitly from the main thread probably
+	// parse the payloads explicitly (by object keys, not array indices) in slack.js
+	// and throughout this process
+	// keep in mind that we will build on this to provide
+	// even more specificity in the slack messages to the user
+	// eventually, maybe even allowing them to confirm
+	// their entries 
+
 }
