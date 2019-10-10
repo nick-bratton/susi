@@ -48,20 +48,6 @@ let requestOptions = {
 	},
 }
 
-let testUri = 'https://api.10000ft.com/api/v1/api/v1/users/272229/time_entries?from=';
-testUri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
-
-let testReqOptions = {
-	method: 'GET',
-	resolveWithFullResponse: true,
-	uri: `${testUri}`,
-	headers: {
-		'cache-control': 'no-store',
-		'content-type': 'application/json',
-		'auth': `${auth}`
-	},
-}
-
 let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}` + 'time_entries?from=';
 	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
@@ -69,11 +55,11 @@ let uriToCheckWeeklyTimeEntries = () => {
 }
 
 const getUserEmailFrom10KUserID = async(id) => {
-	this.requestOptions.uri = `${baseUri}users/${id}`;
+	requestOptions.uri = `${baseUri}users/${id}`;
 	let user;
 	return new Promise(
 		(resolve,reject) => {
-			rp(this.requestOptions)
+			rp(requestOptions)
 				.then(response => {
 					user = JSON.parse(response.body);
 				})
@@ -123,12 +109,11 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 
 
 exports.filterEntries = async(weeklyEntries) => {
-	// let activeIds = getActiveIds(weeklyEntries);
+	let activeIds = getActiveIds(weeklyEntries);
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 
 	let suggestionIndentifiers = [];
 	let confirmationIndentifiers = [];
-	// let indexesOfConfirmedSuggestions = [];
 
 	for (let s in suggestionsAndConfirmations.suggestions){
 		let suggestion = suggestionsAndConfirmations.suggestions[s];
@@ -154,19 +139,31 @@ exports.filterEntries = async(weeklyEntries) => {
 	let unconfirmedEntries = _.differenceWith(suggestionIndentifiers, confirmationIndentifiers, _.isEqual);
 	console.log('Amt of unconfirmed entries: ' + unconfirmedEntries.length);
 
-	console.log('Unconfirmed entries: ');
-	for (let e in unconfirmedEntries){
-		console.log(unconfirmedEntries[e]);
+	let payloads = [];
+
+	for (let id of activeIds){
+		// console.log(_.filter(unconfirmedEntries, {'user_id': id }));
+		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
+			let emailAddress = await getUserEmailFrom10KUserID(id);
+			console.log(emailAddress + ' has unconfirmed entries..');
+
+			let dates = [];
+
+			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
+				console.log(entry.date, id);
+				dates.push(entry.date);
+			}
+			
+			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
+				payloads.push({
+					'emailAddress': emailAddress,
+					'dates': dates
+				});
+			}
+		}
 	}
 
-	// write separate function for constructing the payloads
-	// which includes getting the email addresses
-	// call it explicitly from the main thread probably
-	// parse the payloads explicitly (by object keys, not array indices) in slack.js
-	// and throughout this process
-	// keep in mind that we will build on this to provide
-	// even more specificity in the slack messages to the user
-	// eventually, maybe even allowing them to confirm
-	// their entries 
+
+	console.log(payloads);
 
 }

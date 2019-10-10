@@ -48,6 +48,8 @@ const messageContacts = async(payloads) => {
 		});
 }
 
+main();
+
 new Cron(interval, function() {
-	main();
+	// main();
 }, null, true, 'Europe/Berlin');
