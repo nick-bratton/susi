@@ -30,19 +30,20 @@ let requestOptions = {
 let today = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
-	day = '' + d.getDate(),
+	day = '' + d.getDate() - 1,
 	year = d.getFullYear();
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
+	console.log([year, month, day].join('-'));
 	return [year, month, day].join('-');
 }
 
-let sevenDaysAgo = () => {
+let eightDaysAgo = () => {
 	let d = new Date(),
-	sevenDaysAgo = new Date(d.getTime() - (7 * 24 * 60 * 60 * 1000)),
-	month = '' + (sevenDaysAgo.getMonth() + 1),
-	day = '' + sevenDaysAgo.getDate(),
-	year = sevenDaysAgo.getFullYear();
+	eightDaysAgo = new Date(d.getTime() - (8 * 24 * 60 * 60 * 1000)),
+	month = '' + (eightDaysAgo.getMonth() + 1),
+	day = '' + eightDaysAgo.getDate(),
+	year = eightDaysAgo.getFullYear();
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
 	return [year, month, day].join('-');
@@ -50,7 +51,7 @@ let sevenDaysAgo = () => {
 
 let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}` + 'time_entries?from=';
-	uri += sevenDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
+	uri += eightDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
 	return uri;
 }
 
