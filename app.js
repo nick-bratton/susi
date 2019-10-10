@@ -15,15 +15,13 @@ else if (process.env.MODE == 'pro'){
 	interval = '0 10 * * MON';
 }
 else if (process.env.MODE == 'pro_beta'){
-	interval = '*/5 * * * * *';
-	// interval = '0 16 * * MON-THU';
+	interval = '0 16 * * MON-THU';
 }
 
 function main(){
 	let payloads;
 	tenK.getWeeklyTimeEntries()
 		.then(async function (response) {
-			// payloads =  await tenK.getUserIdsAndTheirUnconfirmedDates(response);
 			let r = JSON.parse(response.body);
 			payloads = await tenK.filterEntries(r.data);
 
@@ -32,7 +30,7 @@ function main(){
 			console.log('Caught error in main():' + err);
 		})
 		.finally(async function(){
-			// messageContacts(payloads);
+			messageContacts(payloads);
 		})
 }
 
@@ -48,8 +46,6 @@ const messageContacts = async(payloads) => {
 		});
 }
 
-main();
-
 new Cron(interval, function() {
-	// main();
+	main();
 }, null, true, 'Europe/Berlin');

@@ -90,7 +90,6 @@ const getActiveIds = (weeklyEntries) => {
 }
 
 const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
-	console.log('Total Weekly Entries: ' + Object.keys(weeklyEntries).length);
 	let weeklySuggestions = [];
 	let weeklyConfirmations = [];
 	let suggestionsAndConfirmations = {};
@@ -133,27 +132,16 @@ exports.filterEntries = async(weeklyEntries) => {
 		confirmationIndentifiers.push(confirmationIndentifier);
 	}
 
-	let total = suggestionIndentifiers.length + confirmationIndentifiers.length;
-	console.log('Suggestions: ' + suggestionIndentifiers.length + '; Confirmations: ' + confirmationIndentifiers.length + '; Total: ' + total);
-
 	let unconfirmedEntries = _.differenceWith(suggestionIndentifiers, confirmationIndentifiers, _.isEqual);
-	console.log('Amt of unconfirmed entries: ' + unconfirmedEntries.length);
-
 	let payloads = [];
 
 	for (let id of activeIds){
-		// console.log(_.filter(unconfirmedEntries, {'user_id': id }));
 		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
 			let emailAddress = await getUserEmailFrom10KUserID(id);
-			console.log(emailAddress + ' has unconfirmed entries..');
-
 			let dates = [];
-
 			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
-				console.log(entry.date, id);
 				dates.push(entry.date);
 			}
-			
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 				payloads.push({
 					'emailAddress': emailAddress,
@@ -162,8 +150,5 @@ exports.filterEntries = async(weeklyEntries) => {
 			}
 		}
 	}
-
-
-	console.log(payloads);
-
+	return payloads;
 }
