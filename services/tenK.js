@@ -16,6 +16,17 @@ else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
 	auth = process.env.TENK;
 }
 
+let requestOptions = {
+	method: 'GET',
+	resolveWithFullResponse: true,
+	uri: `${baseUri}`,
+	headers: {
+		'cache-control': 'no-store',
+		'content-type': 'application/json',
+		'auth': `${auth}`
+	},
+}
+
 let today = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
@@ -35,17 +46,6 @@ let sevenDaysAgo = () => {
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
 	return [year, month, day].join('-');
-}
-
-let requestOptions = {
-	method: 'GET',
-	resolveWithFullResponse: true,
-	uri: `${baseUri}`,
-	headers: {
-		'cache-control': 'no-store',
-		'content-type': 'application/json',
-		'auth': `${auth}`
-	},
 }
 
 let uriToCheckWeeklyTimeEntries = () => {
@@ -72,11 +72,6 @@ const getUserEmailFrom10KUserID = async(id) => {
 				})
 		}
 	)
-}
-
-exports.getWeeklyEntries = () => {
-	requestOptions.uri = uriToCheckWeeklyTimeEntries();
-	return rp(requestOptions)
 }
 
 const getActiveIds = (weeklyEntries) => {
@@ -106,6 +101,23 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	return suggestionsAndConfirmations;
 }
 
+const getEntryIdentifiers = (entries) => {
+	let identifiers = [];
+	for (let e of entries){
+		let identifier = {};
+		identifier.date = e.date;
+		identifier.user_id = e.user_id;
+		identifier.assignable_id = e.assignable_id;
+		identifiers.push(identifier);
+	}
+	return identifiers;
+}
+
+exports.getWeeklyEntries = () => {
+	requestOptions.uri = uriToCheckWeeklyTimeEntries();
+	return rp(requestOptions)
+}
+
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
@@ -129,29 +141,9 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
 }
 
 exports.getUnconfirmedEntries = async(weeklyEntries) => {
-
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
-	let suggestionIndentifiers = [];
-	let confirmationIndentifiers = [];
-
-	for (let s in suggestionsAndConfirmations.suggestions){
-		let suggestion = suggestionsAndConfirmations.suggestions[s];
-		let suggestionIndentifier = {};
-		suggestionIndentifier.date = suggestion.date;
-		suggestionIndentifier.user_id = suggestion.user_id;
-		suggestionIndentifier.assignable_id = suggestion.assignable_id;
-		suggestionIndentifiers.push(suggestionIndentifier);
-	}
-	
-	for (let c in suggestionsAndConfirmations.confirmations){
-		let confirmation = suggestionsAndConfirmations.confirmations[c];
-		let confirmationIndentifier = {};
-		confirmationIndentifier.date = confirmation.date;
-		confirmationIndentifier.user_id = confirmation.user_id;
-		confirmationIndentifier.assignable_id = confirmation.assignable_id;
-		confirmationIndentifiers.push(confirmationIndentifier);
-	}
-
-	let unconfirmedEntries = _.differenceWith(suggestionIndentifiers, confirmationIndentifiers, _.isEqual);
+	let suggestionIdentifiers = getEntryIdentifiers(suggestionsAndConfirmations.suggestions);
+	let confirmationIndentifiers = getEntryIdentifiers(suggestionsAndConfirmations.confirmations);
+	let unconfirmedEntries = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
 	return unconfirmedEntries;
 }

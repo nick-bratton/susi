@@ -13,20 +13,6 @@ else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
 	Slack = new WebClient(process.env.SLACK_PRO);
 }
 
-exports.findAndMessageUser = (payload) => {
-	return new Promise(async function(resolve,reject){
-		await Slack.users.lookupByEmail({
-			email: `${payload.emailAddress}`
-		}).then(user => {
-			postMessageWithPayload(user.user.id, payload);
-			resolve(user.user.id);
-		})
-		.catch(err => {
-			console.log('Error in findAndMessageUser(): ' + err);
-		})
-	})
-}
-
 const postMessageWithPayload = async(id, payload) => {
 
 	let listOfUnconfirmedEntries = '• ';
@@ -39,7 +25,6 @@ const postMessageWithPayload = async(id, payload) => {
 	
 	if (process.env.MODE == 'pro_beta' || process.env.MODE == 'dev'){
 		if (whitelist.emails.includes(payload.emailAddress)){
-			console.log(payload.emailAddress);
 			await Slack.chat.postMessage({
 				channel: `${id}`,
 				as_user: true,
@@ -98,4 +83,18 @@ const postMessageWithPayload = async(id, payload) => {
 			]
 		});
 	}
+}
+
+exports.findAndMessageUser = (payload) => {
+	return new Promise(async function(resolve,reject){
+		await Slack.users.lookupByEmail({
+			email: `${payload.emailAddress}`
+		}).then(user => {
+			postMessageWithPayload(user.user.id, payload);
+			resolve(user.user.id);
+		})
+		.catch(err => {
+			console.log('Error in findAndMessageUser(): ' + err);
+		})
+	})
 }
