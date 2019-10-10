@@ -38,7 +38,7 @@ function main(){
 const messageContacts = async(payloads) => {
 	await Promise.all(payloads.map(payload => slack.findAndMessageUser(payload)))
 		.then(slackUserIds => {
-			console.log('Notified Slack users: ' + slackUserIds);
+			// console.log('Notified Slack users: ' + slackUserIds);
 		})
 		.catch(err => {
 			console.log('Error in notifyContacts(): ' + err)
@@ -46,7 +46,7 @@ const messageContacts = async(payloads) => {
 		.finally(function(){
 		});
 }
-main();
+
 new Cron(interval, function() {
-	// main();
+	main();
 }, null, true, 'Europe/Berlin');
