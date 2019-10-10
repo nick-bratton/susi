@@ -19,18 +19,19 @@ else if (process.env.MODE == 'pro_beta'){
 }
 
 function main(){
-	let payloads;
-	tenK.getWeeklyTimeEntries()
+	let unconfirmedEntries, messagePayloads;
+	tenK.getWeeklyEntries()
 		.then(async function (response) {
 			let r = JSON.parse(response.body);
-			payloads = await tenK.filterEntries(r.data);
-
+			let allWeeklyEntries = r.data;
+			unconfirmedEntries = await tenK.getUnconfirmedEntries(allWeeklyEntries);
+			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntries);
 		})
 		.catch(function (err) {
-			console.log('Caught error in main():' + err);
+			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
-			messageContacts(payloads);
+			messageContacts(messagePayloads);
 		})
 }
 

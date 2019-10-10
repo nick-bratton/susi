@@ -74,15 +74,15 @@ const getUserEmailFrom10KUserID = async(id) => {
 	)
 }
 
-exports.getWeeklyTimeEntries = () => {
+exports.getWeeklyEntries = () => {
 	requestOptions.uri = uriToCheckWeeklyTimeEntries();
 	return rp(requestOptions)
 }
 
 const getActiveIds = (weeklyEntries) => {
 	let unfilteredIds = [];
-	for (let e in weeklyEntries){
-		unfilteredIds.push(weeklyEntries[e].user_id);
+	for (let e of weeklyEntries){
+		unfilteredIds.push(e.user_id);
 	}
 	let filteredIds = new Set(unfilteredIds);
 	let activeIds = Array.from(filteredIds);
@@ -106,11 +106,31 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	return suggestionsAndConfirmations;
 }
 
+exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
+	let activeIds = getActiveIds(allWeeklyEntries);
+	let payloads = [];
 
-exports.filterEntries = async(weeklyEntries) => {
-	let activeIds = getActiveIds(weeklyEntries);
+	for (let id of activeIds){
+		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
+			let emailAddress = await getUserEmailFrom10KUserID(id);
+			let dates = [];
+			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
+				dates.push(entry.date);
+			}
+			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
+				payloads.push({
+					'emailAddress': emailAddress,
+					'dates': dates
+				});
+			}
+		}
+	}
+	return payloads;
+}
+
+exports.getUnconfirmedEntries = async(weeklyEntries) => {
+
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
-
 	let suggestionIndentifiers = [];
 	let confirmationIndentifiers = [];
 
@@ -133,22 +153,5 @@ exports.filterEntries = async(weeklyEntries) => {
 	}
 
 	let unconfirmedEntries = _.differenceWith(suggestionIndentifiers, confirmationIndentifiers, _.isEqual);
-	let payloads = [];
-
-	for (let id of activeIds){
-		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
-			let emailAddress = await getUserEmailFrom10KUserID(id);
-			let dates = [];
-			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
-				dates.push(entry.date);
-			}
-			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
-				payloads.push({
-					'emailAddress': emailAddress,
-					'dates': dates
-				});
-			}
-		}
-	}
-	return payloads;
+	return unconfirmedEntries;
 }

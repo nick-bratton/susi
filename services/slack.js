@@ -69,7 +69,7 @@ const postMessageWithPayload = async(id, payload) => {
 			});
 		}
 	}
-	else if (process.env.MODe == 'pro'){
+	else if (process.env.MODE == 'pro'){
 		await Slack.chat.postMessage({
 			channel: `${id}`,
 			as_user: true,
@@ -92,7 +92,7 @@ const postMessageWithPayload = async(id, payload) => {
 					"type": "section",
 					"text": {
 						"type": "mrkdwn",
-						"text": 'You received this message as you are on this bots beta testing user whitelist. Please report any bugs or misinformation to Nick Bratton. Thank you for participating!" 
+						"text": "You received this message as you are on this bots beta testing user whitelist. Please report any bugs or misinformation to Nick Bratton. Thank you for participating!" 
 						}
 					},
 			]
