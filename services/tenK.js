@@ -27,7 +27,7 @@ let requestOptions = {
 	},
 }
 
-let today = () => {
+let yesterday = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
 	day = '' + d.getDate() - 1,
@@ -50,7 +50,7 @@ let eightDaysAgo = () => {
 
 let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}` + 'time_entries?from=';
-	uri += eightDaysAgo() + '&to=' + today() + '&per_page=500&with_suggestions=true';
+	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=500&with_suggestions=true';
 	return uri;
 }
 
@@ -113,6 +113,42 @@ const getEntryIdentifiers = (entries) => {
 	return identifiers;
 }
 
+const getWeekdayFromYYYYMMDD = (yyyymmdd) => {
+	let weekday = new Date(yyyymmdd).getDay();
+	return isNaN(weekday) ? null : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][weekday];
+}
+
+const getYearFromYYYYMMDD = (yyyymmdd) => {
+	let parsed = yyyymmdd.split('-');
+	return(parsed[0]);
+}
+
+const getMonthFromYYYYMMDD = (yyyymmdd) => {
+	let parsed = yyyymmdd.split('-');
+	return(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August','September', 'October','November', 'December'][parsed[1] - 1]);
+}
+
+const getDateFromYYYYMMDD = (yyyymmdd) => {
+	let parsed = yyyymmdd.split('-');
+	let date = parsed[2];
+	if (date[0] == '0'){
+		date = date.slice(1);
+		return(date);
+	}
+	else{
+		return(date);
+	}
+}
+
+const makeDateReadable = (yyyymmdd) => {
+	let weekday = getWeekdayFromYYYYMMDD(yyyymmdd);
+	let year = getYearFromYYYYMMDD(yyyymmdd);
+	let month = getMonthFromYYYYMMDD(yyyymmdd);
+	let date = getDateFromYYYYMMDD(yyyymmdd);
+	let readableDate = `${weekday} ${date}. ${month} ${year}`;
+	return readableDate;
+}
+
 exports.getWeeklyEntries = () => {
 	requestOptions.uri = uriToCheckWeeklyTimeEntries();
 	return rp(requestOptions)
@@ -127,7 +163,8 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
 			let emailAddress = await getUserEmailFrom10KUserID(id);
 			let dates = [];
 			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
-				dates.push(entry.date);
+				makeDateReadable(entry.date);
+				dates.push(makeDateReadable(entry.date));
 			}
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 				payloads.push({
