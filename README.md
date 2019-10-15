@@ -1,41 +1,99 @@
-# Basics
+# Susi: Third Party Extension for Slack / 10000ft
 
-## Install 
+Susi is a Node script that periodically checks an organization's [10000ft](https://github.com/10Kft/10kft-api) time entries and notififies the organization's employees via [Slack](https://slack.com) when they have unconfirmed entries. Whereas 10000ft offers a web interface for time-tracking, it is mostly just a database. This script treats it as such, and aims to integrate API calls to the 10000ft backend into a Slack bot's interactive messages. 
 
-This project uses a few node modules so make sure to run npm install.
+The structure of the repository is simply one main script (`app.js`) and two service scripts in the *services* directory for interacting with an organization's 10000ft data (`tenK.js`) and its Slack workspace (`slack.js`). 
 
-## Launch
+Two releases are planned as of the time of this writing (October 2019). The main features that define the releases are: 
 
-There are three startup scripts, one for a development environment using 10000Ft's playground V-Next, and two for production (and production-beta) use with 10000Ft itself. These can be respectively launched by running:
+## 1.0 (Currently in beta)
 
-`npm run dev`
+* Check organizations time entries weekly and send individuals a direct message if they had unconfirmed time entries over the last week. The message includes the dates they have not yet confirmed and a link to 10000ft. 
 
-or
+## 2.0 (In planning)
 
-`npm run pro`
+* Include message blocks that display details about suggested (unconfirmed) time entries 
+* Include buttons to confirm suggested hours (without alterations)
+* Include input fields to submit amounts of hours that were different than what was suggested for a given time entry.
 
-or 
+# Installation
 
-`npm run beta`
+This package was written to use as few dependencies as possible, yet a few are required. After cloning, run 
 
-The differences affect the timing of the Cron job to execute the main() JavaScript in app.js (in dev mode it's every 5 seconds, in pro mode it's every Monday at 10:00, and in pro_beta mode it's Mon-Thu at 16:00). Also affected are the API endpoints in 10000Ft and the tokens used in authorizing both requests to 10000Ft and Slack.
+`npm install` 
 
-## Authorization
+to install the [@slack/web-api](https://slack.dev/node-slack-sdk/web-api) package, [lodash](https://www.npmjs.com/package/lodash), [cron](https://www.npmjs.com/package/cron), and [dotenv](https://www.npmjs.com/package/dotenv). Feel free to use the Yarn package manager at your own risk.
 
-These tokens should be provided in a .env file in the same directory containing app.js. See .env.example for how this file should look like. 
+# Configuration
 
-Another difference to note is that, in the beta mode, email addresses returned from 10000ft will be checked against a local whitelist before the bot sends messages.
+The script is configurable across the following entrypoints:
 
-# Open Tasks
+## .env
 
-1. Handle [pagination](https://github.com/10Kft/10kft-api/blob/master/sections/first-things-first.md#pagination) in 10000ft responses. Note the '&per_page=500' in the exports.uriToCheckWeeklyTimeEntries() in tenK.js. 500 was chosen as its well above what we could expect in a given week (i.e., 80 employees * 7 time entries in a week = 500 results). We should never have more than one page returned then. This is solution for the time being only. What would be better would be to handle pagination dynamically.
+The `.env` file contains your service authorization tokens. You will need to add your tokens here and change the name of the file from `.env.example` to `.env` before launching.
 
-2. Install, configure, and launch a process manager like [PM2](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-18-04#step-3-%E2%80%94-installing-pm2) or [forever](https://www.npmjs.com/package/forever). 
+## whitelist.js
 
-3. Dev pipeline: A. main() in and out of cron job; B. whitelist
+The `whitelist.js` exports an array of email addresses that will be used to define which members of the Slack workspace will receive notifications upon the script's execution. Note this only has an effect if the launch mode is `dev` or `pro_beta`. In production, no whitelist is necessary.
 
-4. Saving console output and mailing one of the devs health reports on the bot
+## cron (app.js)
 
-5. Feature: Interactivity; A. Link to last week's page for 'me' B. Confirm hours
+Cron is used to schedule execution of the `main()` script. As defined in `app.js`, in `pro_beta` mode the script runs every Monday - Thursday at 16:00 and in `pro` mode it is scheduled to run every Monday at 10:00. This can be changed by setting the `interval` variable in the corresponding conditional. The Cron job runs on Berlin time by default.
 
-6. Hosting
+# Launch
+
+There are three startup scripts, as of the time of this writing. 
+
+* For development: `npm run dev`
+
+* For beta: `npm run beta`
+
+* For production: `npm run pro`
+
+The only direct consequences of running one of these scripts are setting the value of `process.env.MODE` and starting the runtime. This value is then used across the scripts to make configurations (e.g., whether sandbox or production environment authorization tokens are used; when the Cron job executes; which URIs are used in HTTP requests; which, if any, email whitelist should be used to filter the address list before message delivery).
+
+# Authorization
+
+Whereas an authorization token is included in the header of each HTTP request made to the 10000ft API, a Slack web client is initialized with an authorization token and then methods on the client are called simply after that. 
+
+Store your tokens in `.env`. [See here for more.](#.env)
+
+# Open Development Tasks
+
+* [Handling Pagination](#handling-pagination)
+* [Building Interactivity](#building-interactivity)
+* [Handling Errors](#handling-errors)
+
+## Handling Pagination
+
+[Paginated responses](https://github.com/10Kft/10kft-api/blob/master/sections/first-things-first.md#pagination) from 10000ft are not currently handled. For the time being, when requesting Time Entries from their API, the `per_page` parameter is set in the HTTP request URI to 500: `"&per_page=500"`.
+
+## Building Interactivity 
+
+The magic of this project will come in when the Slack notifications become interactive. As described [above](#2.0-in-planning), the goal of this development task is to enable users to confirm their suggested time entries without leaving Slack and to enable them to confirm a given entry after entering the hours they theoretically actually worked.
+
+In theory, no API should be required to pass requests between Slack and 10000ft. The idea here is that:
+
+1. The user gets a message with a dialog and a confirm button.
+2. The user either confirms what was suggested, or enters a number in the dialog, and then confirms. 
+3. Upon confirming, a POST request is sent from Slack to 10000ft. 
+4. The user is notified that their request was sent (and ideally, submitted successfully).
+
+See the Slack API documentation on [handling responses from dialogs](https://api.slack.com/dialogs#response) but note that this information is 'outmoded' but not yet deprecated.
+
+The 10000ft endpoint would be `POST /api/v1/users/<user_id>/time_entries` and, nominally, the payload include should include the following three key/value pairs: 
+```
+  {
+    "assignable_id": 1001,
+    "date": "2019-10-10",
+    "hours": 8.0
+  }
+```
+
+but other fields can be included like `tasks` and `notes`. (It is probably a good idea to include a note like `Submitted via Slack`.) 
+
+Care must be taken to ensure that POST requests with `Content-Type: application/x-www-form-urlencoded` are properly handled/decoded by the 10000ft API. Payloads constructed from Slack would be encoded thusly. 
+
+## Handling Errors
+
+Care was made to use Promise based JavaScript where possible. Errors will be caught, but just console logged. The `catch` and `finally` blocks should be developed throughout the code base as a starting point.
