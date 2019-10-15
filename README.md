@@ -81,7 +81,8 @@ In theory, no API should be required to pass requests between Slack and 10000ft.
 
 See the Slack API documentation on [handling responses from dialogs](https://api.slack.com/dialogs#response) but note that this information is 'outmoded' but not yet deprecated.
 
-The 10000ft endpoint would be `POST /api/v1/users/<user_id>/time_entries` and, nominally, the payload include should include the following three key/value pairs: 
+The 10000ft endpoint would be `POST /api/v1/users/<user_id>/time_entries` and, nominally, the payload needs to include the following three key/value pairs: 
+
 ```
   {
     "assignable_id": 1001,

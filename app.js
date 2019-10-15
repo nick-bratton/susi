@@ -44,7 +44,7 @@ const messageContacts = async(payloads) => {
 			console.log('Error in notifyContacts(): ' + err)
 		})
 		.finally(function(){
-			// console.log('Messaged contacts.');
+			console.log('Done.');
 		});
 }
 

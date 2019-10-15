@@ -47,7 +47,7 @@ const postMessageWithPayload = async(id, payload) => {
 						"type": "section",
 						"text": {
 							"type": "mrkdwn",
-							"text": "You received this message as you are on this bots beta testing user whitelist. Notifications will go out every working day at 1600h until the bot is officially launched.\n\nPlease report any bugs or misinformation to Nick Bratton. Thank you for participating!" 
+							"text": "You received this message as you are on this bots beta testing user whitelist. Notifications will go out every working day at 1600h until the bot is officially launched.\n\nPlease report any bugs or misinformation to Nick Bratton. Thanks for participating! Feel free to checkout the code on <https://github.com/nick-bratton/susi|GitHub>." 
 							}
 						},
 				]
