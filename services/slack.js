@@ -23,8 +23,39 @@ const postMessageWithPayload = async(id, payload) => {
 	
 	listOfUnconfirmedEntries = listOfUnconfirmedEntries.slice(0,-3);
 	
-	if (process.env.MODE == 'pro_beta' || process.env.MODE == 'dev'){
+	if (process.env.MODE == 'pro_beta'){
 		if (whitelist.emails.includes(payload.emailAddress)){
+			await Slack.chat.postMessage({
+				channel: `${id}`,
+				as_user: true,
+				"blocks": [
+					{
+						"type":"section",
+						"text": {
+							"type": "mrkdwn",
+							"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
+						}
+					},
+					{
+					"type": "section",
+					"text": {
+						"type": "mrkdwn",
+						"text": `${listOfUnconfirmedEntries}`
+						}
+					},
+					{
+						"type": "section",
+						"text": {
+							"type": "mrkdwn",
+							"text": "You received this message as you are on this bots beta testing user whitelist. Notifications will go out every working day at 1600h until the bot is officially launched.\n\nPlease report any bugs or misinformation to Nick Bratton. Thank you for participating!" 
+							}
+						},
+				]
+			});
+		}
+	}
+	else if (process.env.MODE == 'dev') {
+		if (whitelist.devEmail.includes(payload.emailAddress)){
 			await Slack.chat.postMessage({
 				channel: `${id}`,
 				as_user: true,
@@ -73,13 +104,6 @@ const postMessageWithPayload = async(id, payload) => {
 					"text": `${listOfUnconfirmedEntries}`
 					}
 				},
-				{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": "You received this message as you are on this bots beta testing user whitelist. Please report any bugs or misinformation to Nick Bratton. Thank you for participating!" 
-						}
-					},
 			]
 		});
 	}
