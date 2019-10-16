@@ -51,13 +51,14 @@ const messageContacts = async(payloads) => {
 // For development purposes,
 // just run the script once:
 if (!schedule){
-	main();
+	// main();
+	tenK.postEntry();
 }
 
 // For production purposes,
 // schedule a Cron job:
 new Cron(interval, function() {
 	if (schedule){
-		main();
+		// main();
 	}
 }, null, true, 'Europe/Berlin');

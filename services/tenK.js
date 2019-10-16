@@ -184,3 +184,40 @@ exports.getUnconfirmedEntries = async(weeklyEntries) => {
 	let unconfirmedEntries = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
 	return unconfirmedEntries;
 }
+
+
+exports.postEntry = async() => {
+
+	let options = {
+		method: 'POST',
+		resolveWithFullResponse: true,
+		uri: 'https://api.10000ft.com/api/v1/users/496565/time_entries',
+		headers: {
+			'cache-control': 'no-store',
+			'content-type': 'application/json',
+			'auth': `${process.env.TENK}`
+		},
+		body: {
+			'assignable_id': '2514677',
+			'date': `2019-10-15`,
+			'hours': 8.0,
+		},
+		json: true
+	}
+
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					console.log(response.body);
+				})
+				.catch(err => {
+					console.log('Error in postEntry(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					console.log('Posted time entry.');
+				})
+		}
+	)
+}
