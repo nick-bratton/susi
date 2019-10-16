@@ -4,17 +4,13 @@ require('dotenv').config()
 const rp = require('request-promise');
 const _ = require('lodash');
 
-let baseUri = '';
-let auth = '';
+let baseUri = 'https://api.10000ft.com/api/v1/';
+let auth = process.env.TENK;
 
-if (process.env.MODE == 'dev'){
-	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-	auth = process.env.VNEXT;
-}
-else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
-	baseUri = 'https://api.10000ft.com/api/v1/';
-	auth = process.env.TENK;
-}
+// if (process.env.MODE == 'dev'){
+// 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+// 	auth = process.env.VNEXT;
+// }
 
 let requestOptions = {
 	method: 'GET',
@@ -149,6 +145,17 @@ const makeDateReadable = (yyyymmdd) => {
 	return readableDate;
 }
 
+const convertYYYYMMDDToNumber = (yyyymmdd) => {
+	yyyymmdd = yyyymmdd.split('-');
+	return Number(yyyymmdd[2]+yyyymmdd[1]+yyyymmdd[0]);
+}
+
+const sortDatesTemporally = (dates) => {
+	dates.sort(function(a,b){
+		return convertYYYYMMDDToNumber(a) - convertYYYYMMDDToNumber(b);
+	});
+}
+
 exports.getWeeklyEntries = () => {
 	requestOptions.uri = uriToCheckWeeklyTimeEntries();
 	return rp(requestOptions)
@@ -157,14 +164,16 @@ exports.getWeeklyEntries = () => {
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
-
 	for (let id of activeIds){
 		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
 			let emailAddress = await getUserEmailFrom10KUserID(id);
 			let dates = [];
 			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
-				makeDateReadable(entry.date);
-				dates.push(makeDateReadable(entry.date));
+				dates.push(entry.date);
+			}
+			sortDatesTemporally(dates);
+			for (let entry of dates){
+				makeDateReadable(entry);
 			}
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 				payloads.push({

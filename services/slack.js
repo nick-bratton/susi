@@ -4,14 +4,13 @@ require('dotenv').config()
 
 const { WebClient } = require('@slack/web-api');
 let Slack;
+Slack = new WebClient(process.env.SLACK_PRO);
 const whitelist = require('../whitelist.js');
 
-if (process.env.MODE == 'dev'){
-	Slack = new WebClient(process.env.SLACK_DEV);
-}
-else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
-	Slack = new WebClient(process.env.SLACK_PRO);
-}
+
+// if (process.env.MODE == 'dev'){
+// 	Slack = new WebClient(process.env.SLACK_DEV);
+// }
 
 const postMessageWithPayload = async(id, payload) => {
 
