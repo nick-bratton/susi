@@ -1,4 +1,5 @@
 whitelist.js
+server.js
 
 private
 .env
