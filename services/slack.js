@@ -18,13 +18,6 @@ const postMessageWithPayload = async(id, payload) => {
 				channel: `${id}`,
 				as_user: true,
 				"blocks": [
-					// {
-					// 	"type":"section",
-					// 	"text": {
-					// 		"type": "mrkdwn",
-					// 		"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
-					// 	}
-					// },
 					{
 						"type": "section",
 						"text": {
@@ -91,3 +84,7 @@ exports.findAndMessageUser = (payload) => {
 		})
 	})
 }
+
+
+// https://api.slack.com/tutorials/intro-to-message-buttons
+// https://api.slack.com/block-kit/surfaces/modals#updating_views
