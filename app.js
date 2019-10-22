@@ -31,7 +31,7 @@ function main(){
 			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
-			// this should not be in a finally block....
+			console.log(messagePayloads);
 			messageContacts(messagePayloads);
 		})
 }

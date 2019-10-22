@@ -1,6 +1,8 @@
 whitelist.js
 server.js
 
+modal.json
+
 private
 .env
 .env.local
