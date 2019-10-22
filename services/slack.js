@@ -4,145 +4,79 @@ require('dotenv').config()
 
 const { WebClient } = require('@slack/web-api');
 let Slack;
-const whitelist = require('../whitelist.js');
-
-// if (process.env.MODE == 'dev'){
-// 	Slack = new WebClient(process.env.SLACK_DEV);
-// }
-// else if(process.env.MODE == 'pro' || process.env.MODE == 'pro_beta'){
-// 	Slack = new WebClient(process.env.SLACK_PRO);
-// }
-
 Slack = new WebClient(process.env.SLACK_PRO);
 
-
+const whitelist = require('../whitelist.js');
 
 const postMessageWithPayload = async(id, payload) => {
-
-	// let listOfUnconfirmedEntries = '• ';
-
-	// for (let date of payload.dates){
-	// 	listOfUnconfirmedEntries += date + '\n• ';
-	// }
-	
-	// listOfUnconfirmedEntries = listOfUnconfirmedEntries.slice(0,-3);
 
 	let dummy = JSON.stringify(payload);
 
 	if (process.env.MODE == 'dev') {
 		if (whitelist.devEmail.includes(payload.emailAddress)){
-			console.log('here');
 			await Slack.chat.postMessage({
 				channel: `${id}`,
 				as_user: true,
 				"blocks": [
-					{
-						"type":"section",
-						"text": {
-							"type": "mrkdwn",
-							"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
-						}
-					},
-					{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": `${dummy}`
-						}
-					},
+					// {
+					// 	"type":"section",
+					// 	"text": {
+					// 		"type": "mrkdwn",
+					// 		"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
+					// 	}
+					// },
 					{
 						"type": "section",
 						"text": {
 							"type": "mrkdwn",
-							"text": "You received this message as you are on this bots beta testing user whitelist. Notifications will go out every working day at 1600h until the bot is officially launched.\n\nPlease report any bugs or misinformation to Nick Bratton. Thank you for participating!" 
+							"text": `${dummy}`
+						}
+					},
+					{
+						"type": "actions",
+						"block_id": "some_id",
+						"elements": [
+							{
+								"type": "button",
+								"text": {
+									"type":"plain_text",
+									"text": "Confirm Now"
+								},
+								"value": "confirm",
+								"action_id": "confirm_button_action_id"
 							}
-						},
+						]
+					}
 				]
 			});
 		}
 	}
-	
-	// else if (process.env.MODE == 'pro_beta'){
-	// 	if (whitelist.emails.includes(payload.emailAddress)){
-	// 		await Slack.chat.postMessage({
-	// 			channel: `${id}`,
-	// 			as_user: true,
-	// 			"blocks": [
-	// 				{
-	// 					"type":"section",
-	// 					"text": {
-	// 						"type": "mrkdwn",
-	// 						"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
-	// 					}
-	// 				},
-	// 				{
-	// 				"type": "section",
-	// 				"text": {
-	// 					"type": "mrkdwn",
-	// 					"text": `${listOfUnconfirmedEntries}`
-	// 					}
-	// 				},
-	// 				{
-	// 					"type": "section",
-	// 					"text": {
-	// 						"type": "mrkdwn",
-	// 						"text": "You received this message as you are on this bots beta testing user whitelist. Notifications will go out every working day at 1600h until the bot is officially launched.\n\nPlease report any bugs or misinformation to Nick Bratton. Thanks for participating! Feel free to checkout the code on <https://github.com/nick-bratton/susi|GitHub>." 
-	// 						}
-	// 					},
-	// 			]
-	// 		});
-	// 	}
-	// }
-	// else if (process.env.MODE == 'pro'){
-	// 	await Slack.chat.postMessage({
-	// 		channel: `${id}`,
-	// 		as_user: true,
-	// 		"blocks": [
-	// 			{
-	// 				"type":"section",
-	// 				"text": {
-	// 					"type": "mrkdwn",
-	// 					"text": "<https://app.10000ft.com/me/tracker|Please confirm your hours on 10000ft.>\nYou have unconfirmed time entries on the following days:"
-	// 				}
-	// 			},
-	// 			{
-	// 			"type": "section",
-	// 			"text": {
-	// 				"type": "mrkdwn",
-	// 				"text": `${listOfUnconfirmedEntries}`
-	// 				}
-	// 			},
-	// 		]
-	// 	});
-	// }
 }
 
 const constructInputBlock = (entry) => {
 	let block = {
-		"type":"input",
-		"block_id": `${hash_or_smth_predictable}`,
+		"type": "input",
+		"block_id": "unique1",
 		"label": {
 			"type": "plain_text",
-			"text": `${formatted_date} ${project_name} ${assignable_id}` 
+			"text": "10. Oct 2019: Biotronik GTM Strategy (44690)"
 		},
 		"hint":{
-			"type":"plain_text",
-			"text":"Enter your hours above or leave if correct"
+				"type":"plain_text",
+				"text":"Enter your hours above or leave if correct"
 		},
 		"element": {
 			"type": "plain_text_input",
 			"action_id": "plain_input",
 			"placeholder": {
 				"type": "plain_text",
-				"text": `${scheduled_hours}`
+				"text": "8.0"
 			}
 		}
 	};
+	console.log(block);
 	return block;
 }
-
-
-
 
 exports.findAndMessageUser = (payload) => {
 	return new Promise(async function(resolve,reject){
