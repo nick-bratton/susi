@@ -101,13 +101,16 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	return suggestionsAndConfirmations;
 }
 
-const getEntryIdentifiers = (entries) => {
+const getEntryIdentifiers = (entries, includeScheduledHours = false) => {
 	let identifiers = [];
 	for (let e of entries){
 		let identifier = {};
 		identifier.date = e.date;
 		identifier.user_id = e.user_id;
 		identifier.assignable_id = e.assignable_id;
+		if (includeScheduledHours){
+			identifier.scheduled_hours = e.scheduled_hours;
+		}
 		identifiers.push(identifier);
 	}
 	return identifiers;
@@ -154,22 +157,30 @@ exports.getWeeklyEntries = () => {
 	return rp(requestOptions)
 }
 
-exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
+exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
+
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
 
 	for (let id of activeIds){
-		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
+		if (_.filter(unconfirmedEntryIdentifiers, {'user_id': id }).length > 0){
 			let emailAddress = await getUserEmailFrom10KUserID(id);
-			let dates = [];
-			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
-				makeDateReadable(entry.date);
-				dates.push(makeDateReadable(entry.date));
+			let suggestions = [];
+			for (let entry of _.filter(unconfirmedEntryIdentifiers, {'user_id': id })){
+				entry = appendScheduledHoursToUnconfirmedEntryIdentifier(entry, allWeeklyEntries);
+				entry.date = makeDateReadable(entry.date);
+				entry.assignable_name = await this.getAssignableNameFromAssignableId(entry.assignable_id)
+				suggestions.push({
+					'date': entry.date,
+					'assignable_id': entry.assignable_id,
+					'assignable_name': entry.assignable_name,
+					'scheduled_hours': entry.scheduled_hours
+				});
 			}
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 				payloads.push({
 					'emailAddress': emailAddress,
-					'dates': dates
+					'suggestions': suggestions
 				});
 			}
 		}
@@ -177,12 +188,18 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
 	return payloads;
 }
 
-exports.getUnconfirmedEntries = async(weeklyEntries) => {
+const appendScheduledHoursToUnconfirmedEntryIdentifier = (unconfirmedEntryIdentifier, allWeeklyEntries) => {
+	let match = _.find(allWeeklyEntries, unconfirmedEntryIdentifier);
+	unconfirmedEntryIdentifier.scheduled_hours = match.scheduled_hours;
+	return unconfirmedEntryIdentifier;
+}
+
+exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 	let suggestionIdentifiers = getEntryIdentifiers(suggestionsAndConfirmations.suggestions);
 	let confirmationIndentifiers = getEntryIdentifiers(suggestionsAndConfirmations.confirmations);
-	let unconfirmedEntries = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
-	return unconfirmedEntries;
+	let unconfirmedEntryIdentifiers = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
+	return unconfirmedEntryIdentifiers;
 }
 
 
@@ -217,6 +234,38 @@ exports.postEntry = async() => {
 				})
 				.finally(function(){
 					console.log('Posted time entry.');
+				})
+		}
+	)
+}
+
+
+exports.getAssignableNameFromAssignableId = async(assignableId) => {
+	// let uri = baseUri + 'projects/' + assignableId;
+	let uri = baseUri + 'assignables/' + assignableId;
+	let options = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: `${uri}`,
+		headers: {
+			'cache-control': 'no-store',
+			'content-type': 'application/json',
+			'auth': `${auth}`
+		}
+	};
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					let body = JSON.parse(response.body);
+					resolve(body.name);
+				})
+				.catch(err => {
+					console.log('Error caught in Promise returned from getProjectNameFromAssignableId(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					// console.log('');
 				})
 		}
 	)

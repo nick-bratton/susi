@@ -59,6 +59,17 @@ const postMessageWithPayload = async(id, payload) => {
 			await Slack.chat.postMessage({
 				channel: `${id}`,
 				as_user: true,
+
+
+
+
+
+
+
+
+
+
+
 				"blocks": [
 					{
 						"type":"section",
@@ -85,6 +96,15 @@ const postMessageWithPayload = async(id, payload) => {
 			});
 		}
 	}
+
+
+
+
+
+
+
+
+
 	else if (process.env.MODE == 'pro'){
 		await Slack.chat.postMessage({
 			channel: `${id}`,
@@ -108,6 +128,33 @@ const postMessageWithPayload = async(id, payload) => {
 		});
 	}
 }
+
+const constructInputBlock = (entry) => {
+	let block = {
+		"type":"input",
+		"block_id": `${hash_or_smth_predictable}`,
+		"label": {
+			"type": "plain_text",
+			"text": `${formatted_date} ${project_name} ${assignable_id}` 
+		},
+		"hint":{
+			"type":"plain_text",
+			"text":"Enter your hours above or leave if correct"
+		},
+		"element": {
+			"type": "plain_text_input",
+			"action_id": "plain_input",
+			"placeholder": {
+				"type": "plain_text",
+				"text": `${scheduled_hours}`
+			}
+		}
+	};
+	return block;
+}
+
+
+
 
 exports.findAndMessageUser = (payload) => {
 	return new Promise(async function(resolve,reject){

@@ -19,18 +19,19 @@ else if (process.env.MODE == 'pro_beta'){
 }
 
 function main(){
-	let unconfirmedEntries, messagePayloads;
+	let unconfirmedEntryIdentifiers, messagePayloads;
 	tenK.getWeeklyEntries()
 		.then(async function (response) {
 			let r = JSON.parse(response.body);
 			let allWeeklyEntries = r.data;
-			unconfirmedEntries = await tenK.getUnconfirmedEntries(allWeeklyEntries);
-			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntries);
+			unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
+			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
 		})
 		.catch(function (err) {
 			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
+			// this should not be in a finally block....
 			messageContacts(messagePayloads);
 		})
 }
@@ -51,8 +52,12 @@ const messageContacts = async(payloads) => {
 // For development purposes,
 // just run the script once:
 if (!schedule){
-	// main();
-	tenK.postEntry();
+	main();
+
+
+	// tenK.postEntry();
+	// tenK.getAssignabletNameFromAssignableId('41456');
+	// tenK.getAssignabletNameFromAssignableId('40933');
 }
 
 // For production purposes,
