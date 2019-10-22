@@ -29,22 +29,117 @@ app.post('/', urlEncodedParser, (req, res) => {
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
 const sendMessageToSlackResponseUrl = (requestPayload) => {
-	let msg = {
-		"text": "Hello world",
-	}
+
+	// let msg = {
+	// 	"text": "hello",
+	// 	"replace_original": "false"
+	// }
+
+	
 	let options = {
 		method: 'POST',
-		uri: requestPayload.response_url,
+		// uri: requestPayload.response_url,
+		uri:'https://slack.com/api/views.open',
 		headers: {
-			'content-type': 'application/json'
+			'content-type': 'application/json',
+			'authorization': `Bearer ${slackAuth}`
 		},
-		json: msg
+		json: true,
+		body: {
+			"trigger_id": requestPayload.trigger_id,
+			"replace_original": false,
+			"view": {
+				"type": "modal",
+				"callback_id": "modal-with-input",
+				"title": {
+					"type": "plain_text",
+					"text": "10K Reminder",
+					"emoji": true
+				},
+				"submit": {
+					"type": "plain_text",
+					"text": "Submit",
+					"emoji": true
+				},
+				"close": {
+					"type": "plain_text",
+					"text": "Cancel",
+					"emoji": true
+				},
+				"blocks": [
+					{
+						"type": "section",
+						"text": {
+							"type": "plain_text",
+							"emoji": true,
+							"text": "Please confirm your suggested time entries for last week:"
+						}
+					},
+							
+					{
+						"type": "divider"
+					},
+			
+					{
+						"type": "input",
+						"block_id": "unique1",
+						"label": {
+							"type": "plain_text",
+							"text": "10. Oct 2019: Biotronik GTM Strategy (44690)"
+						},
+						"hint":{
+								"type":"plain_text",
+								"text":"Enter your hours above or leave if correct"
+						},
+						"element": {
+							"type": "plain_text_input",
+							"action_id": "plain_input",
+							"placeholder": {
+								"type": "plain_text",
+								"text": "8.0"
+							}
+						}
+					},
+			
+					{
+						"type": "input",
+						"block_id": "unique2",
+									
+						"label": {
+							"type": "plain_text",
+							"text": "11. Oct 2019: Biotronik GTM Strategy (44690)"
+						},
+						"hint":{
+								"type":"plain_text",
+								"text":"Enter your hours above or leave if correct"
+						},
+						"element": {
+							"type": "plain_text_input",
+							"action_id": "plain_input",
+							"placeholder": {
+								"type": "plain_text",
+								"text": "8.0"
+							}
+						}
+					},
+							
+					{
+						"type": "section",
+						"text": {
+							"type": "mrkdwn",
+							"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
+						}
+					}
+				]
+			}
+		}
 	}
+
 	return new Promise(
 		(resolve,reject) => {
 			rp(options)
 				.then(response => {
-					console.log(response.body);
+					console.log(response);
 				})
 				.catch(err => {
 					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
