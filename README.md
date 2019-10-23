@@ -74,8 +74,8 @@ The magic of this project will come in when the Slack notifications become inter
 
 In theory, no API should be required to pass requests between Slack and 10000ft. The idea here is that:
 
-1. The user gets a message with a dialog and a confirm button.
-2. The user either confirms what was suggested, or enters a number in the dialog, and then confirms. 
+1. ~~The user gets a message with a dialog and a confirm button.~~
+2. ~~The user either confirms what was suggested, or enters a number in the dialog, and then confirms.~~
 3. Upon confirming, a POST request is sent from Slack to 10000ft. 
 4. The user is notified that their request was sent (and ideally, submitted successfully).
 
