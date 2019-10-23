@@ -8,12 +8,10 @@ Slack = new WebClient(process.env.SLACK_PRO);
 
 const whitelist = require('../whitelist.js');
 
-const postMessageWithPayload = async(id, payload) => {
-
-	let payload = JSON.stringify(payload);
-
+const postMessageWithPayload = async(id, _payload) => {
+	let payload = JSON.stringify(_payload);
 	if (process.env.MODE == 'dev') {
-		if (whitelist.devEmail.includes(payload.emailAddress)){
+		if (whitelist.devEmail.includes(_payload.emailAddress)){
 			await Slack.chat.postMessage({
 				channel: `${id}`,
 				as_user: true,

@@ -3,8 +3,8 @@
 require('dotenv').config()
 
 const Cron = require('cron').CronJob;
-const tenK = require('./services/tenK.js')
-const slack = require('./services/slack.js')
+const tenK = require('./services/tenK.js');
+const slack = require('./services/slack.js');
 
 let interval = '';
 let schedule = false;

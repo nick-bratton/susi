@@ -202,31 +202,28 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 	return unconfirmedEntryIdentifiers;
 }
 
-
-exports.postEntry = async() => {
-
+const getUserIdFromUserEmail = async(payload) => {
+	let userEmail = payload.user.username + '@ixds.com';
 	let options = {
-		method: 'POST',
+		method: 'GET',
 		resolveWithFullResponse: true,
-		uri: 'https://api.10000ft.com/api/v1/users/496565/time_entries',
+		uri: 'https://vnext-api.10000ft.com/api/v1/users',
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
-			'auth': `${process.env.TENK}`
-		},
-		body: {
-			'assignable_id': '2514677',
-			'date': `2019-10-15`,
-			'hours': 8.0,
-		},
-		json: true
-	}
-
+			'auth': `${process.env.VNEXT}`
+		}
+	};
 	return new Promise(
 		(resolve,reject) => {
 			rp(options)
 				.then(response => {
-					console.log(response.body);
+					let body = JSON.parse(response.body);
+					for (let user of body.data){
+						if (user.email == userEmail){
+							resolve(user.id);
+						}
+					}
 				})
 				.catch(err => {
 					console.log('Error in postEntry(): ' + err)
@@ -239,9 +236,96 @@ exports.postEntry = async() => {
 	)
 }
 
+exports.postEntries = async(payload) => {
+	let userId = await getUserIdFromUserEmail(payload);
+	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + userId + '/time_entries';
+	let options = {
+		method: 'POST',
+		resolveWithFullResponse: true,
+		uri: `${uri}`,
+		headers: {
+			'cache-control': 'no-store',
+			'content-type': 'application/json',
+			'auth': `${process.env.VNEXT}`
+		},
+		body: {
+			'assignable_id': '2514677',
+			'date': `2019-10-15`,
+			'hours': 8.0,
+		},
+		json: true
+	}
+	let postBodies = [];
+	let submittedHoursWithBoundBlockIds = []
+	for (let [key, value] of Object.entries(payload.view.state.values)) {
+		submittedHoursWithBoundBlockIds.push({
+			block_id: `${key}`,
+			hours: `${value.plain_input.value}`
+		});
+	}
+	for (let block of payload.view.blocks){
+		let hours;
+		if (block.type == 'input'){
+			for (let submission of submittedHoursWithBoundBlockIds){
+				if (submission.block_id == block.block_id){
+					hours = submission.hours;
+				}
+			}
+			let body = constructBodyForPOSTRequest(block.label.text, hours);
+			postBodies.push(body); 
+		}
+	}
+	console.log(postBodies);
+
+
+
+
+	
+}
+
+const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
+	let yyyymmdd;
+	let number = dateStringArray[1];
+	number = number.replace('.', '');
+	let year = dateStringArray[3];
+	let month = '';
+	let monthLookup = {
+		'January': '01',
+		'February': '02',
+		'March': '03',
+		'April': '04',
+		'May': '05',
+		'June': '06',
+		'July': '07',
+		'August': '08',
+		'September': '09',
+		'October': '10',
+		'November': '11',
+		'December': '12'
+	}
+	for (let [key, value] of Object.entries(monthLookup)){
+		if (key == dateStringArray[2]){
+			month = value;
+		}
+	}
+	yyyymmdd = `${year}` + '-' + `${month}` + '-' + `${number}`;
+	return yyyymmdd;
+}
+
+const constructBodyForPOSTRequest = (metadata, hours) => {
+	let body = {
+		'hours': `${hours}`
+	};
+	let subs = metadata.split(' ');
+	body.date = constructYYYYMMDDFromReadableDate(subs.slice(0,4));
+	let assignable_id = subs.splice(subs.length-1)[0];
+	assignable_id = assignable_id.replace('(', '');
+	assignable_id = assignable_id.replace(')', '');
+	body.assignable_id = assignable_id;
+	return body;
+}
 
 exports.getAssignableNameFromAssignableId = async(assignableId) => {
-	// let uri = baseUri + 'projects/' + assignableId;
 	let uri = baseUri + 'assignables/' + assignableId;
 	let options = {
 		method: 'GET',

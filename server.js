@@ -4,6 +4,7 @@ require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const rp = require('request-promise');
+const tenK = require('./services/tenK.js');
 const app = express();
 const port = 8080;
 const slackAuth = process.env.SLACK_PRO;
@@ -17,19 +18,33 @@ const urlEncodedParser = bodyParser.urlencoded({extended:false});
 app.post('/', urlEncodedParser, async(req, res) => {
 	res.sendStatus(200); 
 	let payload = JSON.parse(req.body.payload);
-	// https://api.slack.com/docs/verifying-requests-from-slack#about
-	//
-	// Uing the 'token' request verification method is deprecated
-	// and we should move towards validating with signed secrets.
-	if (payload.token == slackToken && payload.token != null && payload.token != undefined){
-		sendMessageToSlackResponseUrl(payload);
-	}
-	else{
-		res.status(403).end("Access forbidden");
+	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined; 	// Using the 'token' request verification method is deprecated and we should move towards validating with signed secrets.
+	switch (payload.type){																																							// See here: https://api.slack.com/docs/verifying-requests-from-slack#about
+		case 'block_actions':
+			if (verified){
+				sendMessageToSlackResponseUrl(payload);
+			}
+			else{
+				res.status(403).end("Access forbidden");
+			}
+			break;
+		case 'view_submission':
+				if (verified){
+					handleSubmission(payload);
+				}
+				else{
+					res.status(403).end("Access forbidden");
+				}
+			break;
 	}
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
+
+const handleSubmission = (payload) => {
+	tenK.postEntries(payload);
+}
+
 
 const sendMessageToSlackResponseUrl = async(requestPayload) => {
 
@@ -143,7 +158,7 @@ let createInputBlock = (suggestion) => {
 
 const constructInputBlocksFromPayload = async (payload) => {
 	return new Promise(async function(resolve,reject){
-		await getUserNameFromEmailAddress(payload)
+		await getUserNameFromUserIdFromParsedPayload(payload)
 			.then(userName => {
 				let parsedPayload = JSON.parse(payload.actions[0].value);
 				let greetingBlock = createGreetingBlock(userName);
@@ -167,7 +182,7 @@ const constructInputBlocksFromPayload = async (payload) => {
 	})
 }
 
-const getUserNameFromEmailAddress = async(payload) => {
+const getUserNameFromUserIdFromParsedPayload = async(payload) => {
 	return new Promise(async function(resolve,reject){
 		await Slack.users.info({
 			user: `${payload.user.id}`
@@ -178,7 +193,7 @@ const getUserNameFromEmailAddress = async(payload) => {
 			resolve(firstName);
 		})
 		.catch(err => {
-			console.log('Error in getUserNameFromEmailAddress(): ' + err);
+			console.log('Error in getUserNameFromUserIdFromParsedPayload(): ' + err);
 		})
 	})
 }
