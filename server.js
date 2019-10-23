@@ -29,16 +29,10 @@ app.post('/', urlEncodedParser, (req, res) => {
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
 const sendMessageToSlackResponseUrl = (requestPayload) => {
+	constructInputBlocksFromPayload(requestPayload);
 
-	// let msg = {
-	// 	"text": "hello",
-	// 	"replace_original": "false"
-	// }
-
-	
 	let options = {
 		method: 'POST',
-		// uri: requestPayload.response_url,
 		uri:'https://slack.com/api/views.open',
 		headers: {
 			'content-type': 'application/json',
@@ -66,80 +60,21 @@ const sendMessageToSlackResponseUrl = (requestPayload) => {
 					"text": "Cancel",
 					"emoji": true
 				},
-				"blocks": [
-					{
-						"type": "section",
-						"text": {
-							"type": "plain_text",
-							"emoji": true,
-							"text": "Please confirm your suggested time entries for last week:"
-						}
-					},
-							
-					{
-						"type": "divider"
-					},
-			
-					{
-						"type": "input",
-						"block_id": "unique1",
-						"label": {
-							"type": "plain_text",
-							"text": "10. Oct 2019: Biotronik GTM Strategy (44690)"
-						},
-						"hint":{
-								"type":"plain_text",
-								"text":"Enter your hours above or leave if correct"
-						},
-						"element": {
-							"type": "plain_text_input",
-							"action_id": "plain_input",
-							"placeholder": {
-								"type": "plain_text",
-								"text": "8.0"
-							}
-						}
-					},
-			
-					{
-						"type": "input",
-						"block_id": "unique2",
-									
-						"label": {
-							"type": "plain_text",
-							"text": "11. Oct 2019: Biotronik GTM Strategy (44690)"
-						},
-						"hint":{
-								"type":"plain_text",
-								"text":"Enter your hours above or leave if correct"
-						},
-						"element": {
-							"type": "plain_text_input",
-							"action_id": "plain_input",
-							"placeholder": {
-								"type": "plain_text",
-								"text": "8.0"
-							}
-						}
-					},
-							
-					{
-						"type": "section",
-						"text": {
-							"type": "mrkdwn",
-							"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
-						}
-					}
-				]
 			}
 		}
 	}
 
+	options.body.view.blocks = constructInputBlocksFromPayload(requestPayload);
+
+	console.log(options.body.view.blocks);
+
 	return new Promise(
 		(resolve,reject) => {
+			console.log(options);
 			rp(options)
 				.then(response => {
 					console.log(response);
+					resolve(response);
 				})
 				.catch(err => {
 					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
@@ -151,3 +86,72 @@ const sendMessageToSlackResponseUrl = (requestPayload) => {
 		}
 	)
 }
+
+const constructInputBlocksFromPayload = (payload) => {
+
+	let parsedPayload = JSON.parse(payload.actions[0].value);
+
+	let headerBlock = {
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"emoji": true,
+			"text": "Please confirm your suggested time entries for last week:"
+		}
+	}
+	
+	let footerBlock = {
+		"type": "section",
+		"text": {
+			"type": "mrkdwn",
+			"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
+		}
+	}
+
+	let createInputBlock = (suggestion) => {
+		let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
+		let blockId = label.hashCode();
+		return {
+			"type": "input",
+			"block_id": `${blockId}`,
+			"label": {
+				"type": "plain_text",
+				"text": label,
+			},
+			"hint": {
+				"type": "plain_text",
+				"text": "Enter your hours above or leave if correct."
+			},
+			"element": {
+				"type": "plain_text_input",
+				"action_id": "plain_input",
+				"placeholder": {
+					"type": "plain_text",
+					"text": `${suggestion.scheduled_hours}`
+				}
+			}
+		}
+	}
+
+	let blocks = []
+	blocks.push(headerBlock);
+	
+	for (let suggestion of parsedPayload.suggestions){
+		let inputBlock = createInputBlock(suggestion);
+		blocks.push(inputBlock);
+	}
+
+	blocks.push(footerBlock);
+	return blocks;
+}
+
+String.prototype.hashCode = function() {
+	var hash = 0, i, chr;
+	if (this.length === 0) return hash;
+	for (i = 0; i < this.length; i++) {
+		chr   = this.charCodeAt(i);
+		hash  = ((hash << 5) - hash) + chr;
+		hash |= 0; // Convert to 32bit integer
+	}
+	return hash;
+};

@@ -10,7 +10,7 @@ const whitelist = require('../whitelist.js');
 
 const postMessageWithPayload = async(id, payload) => {
 
-	let dummy = JSON.stringify(payload);
+	let payload = JSON.stringify(payload);
 
 	if (process.env.MODE == 'dev') {
 		if (whitelist.devEmail.includes(payload.emailAddress)){
@@ -22,12 +22,12 @@ const postMessageWithPayload = async(id, payload) => {
 						"type": "section",
 						"text": {
 							"type": "mrkdwn",
-							"text": `${dummy}`
+							"text": "Please confirm your hours on 10000ft"
 						}
 					},
 					{
 						"type": "actions",
-						"block_id": "some_id",
+						"block_id": "confirm_button",
 						"elements": [
 							{
 								"type": "button",
@@ -35,7 +35,7 @@ const postMessageWithPayload = async(id, payload) => {
 									"type":"plain_text",
 									"text": "Confirm Now"
 								},
-								"value": "confirm",
+								"value": `${payload}`,
 								"action_id": "confirm_button_action_id"
 							}
 						]
@@ -44,31 +44,6 @@ const postMessageWithPayload = async(id, payload) => {
 			});
 		}
 	}
-}
-
-const constructInputBlock = (entry) => {
-	let block = {
-		"type": "input",
-		"block_id": "unique1",
-		"label": {
-			"type": "plain_text",
-			"text": "10. Oct 2019: Biotronik GTM Strategy (44690)"
-		},
-		"hint":{
-				"type":"plain_text",
-				"text":"Enter your hours above or leave if correct"
-		},
-		"element": {
-			"type": "plain_text_input",
-			"action_id": "plain_input",
-			"placeholder": {
-				"type": "plain_text",
-				"text": "8.0"
-			}
-		}
-	};
-	console.log(block);
-	return block;
 }
 
 exports.findAndMessageUser = (payload) => {
