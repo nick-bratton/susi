@@ -41,8 +41,18 @@ app.post('/', urlEncodedParser, async(req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
-const handleSubmission = (payload) => {
-	tenK.postEntries(payload);
+const handleSubmission = async(payload) => {
+	let requestBodies = await tenK.createPostBodies(payload);
+	console.log(requestBodies);
+
+	// thursday refactor 
+
+	// 1. promisify tenK.createPostBodies()
+	// 		so we can await it here
+	//		and return the whole options argument actually instead
+	// 2. here, Promise.all the rp(options)
+	// 3. .then update the modal with a success message
+
 }
 
 

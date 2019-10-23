@@ -236,7 +236,7 @@ const getUserIdFromUserEmail = async(payload) => {
 	)
 }
 
-exports.postEntries = async(payload) => {
+exports.createPostBodies = async(payload) => {
 	let userId = await getUserIdFromUserEmail(payload);
 	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + userId + '/time_entries';
 	let options = {
@@ -248,11 +248,7 @@ exports.postEntries = async(payload) => {
 			'content-type': 'application/json',
 			'auth': `${process.env.VNEXT}`
 		},
-		body: {
-			'assignable_id': '2514677',
-			'date': `2019-10-15`,
-			'hours': 8.0,
-		},
+		body: {},
 		json: true
 	}
 	let postBodies = [];
@@ -275,12 +271,7 @@ exports.postEntries = async(payload) => {
 			postBodies.push(body); 
 		}
 	}
-	console.log(postBodies);
-
-
-
-
-	
+	return postBodies;
 }
 
 const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
