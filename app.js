@@ -31,7 +31,6 @@ function main(){
 			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
-			console.log(messagePayloads);
 			messageContacts(messagePayloads);
 		})
 }
@@ -53,11 +52,6 @@ const messageContacts = async(payloads) => {
 // just run the script once:
 if (!schedule){
 	main();
-
-
-	// tenK.postEntry();
-	// tenK.getAssignabletNameFromAssignableId('41456');
-	// tenK.getAssignabletNameFromAssignableId('40933');
 }
 
 // For production purposes,

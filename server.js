@@ -8,10 +8,13 @@ const app = express();
 const port = 8080;
 const slackAuth = process.env.SLACK_PRO;
 const slackToken = process.env.SLACK_REQUEST_VERIFICATION_TOKEN;
+const { WebClient } = require('@slack/web-api');
+let Slack;
+Slack = new WebClient(process.env.SLACK_PRO);
 
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
-app.post('/', urlEncodedParser, (req, res) => {
+app.post('/', urlEncodedParser, async(req, res) => {
 	res.sendStatus(200); 
 	let payload = JSON.parse(req.body.payload);
 	// https://api.slack.com/docs/verifying-requests-from-slack#about
@@ -28,8 +31,7 @@ app.post('/', urlEncodedParser, (req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
-const sendMessageToSlackResponseUrl = (requestPayload) => {
-	constructInputBlocksFromPayload(requestPayload);
+const sendMessageToSlackResponseUrl = async(requestPayload) => {
 
 	let options = {
 		method: 'POST',
@@ -64,16 +66,12 @@ const sendMessageToSlackResponseUrl = (requestPayload) => {
 		}
 	}
 
-	options.body.view.blocks = constructInputBlocksFromPayload(requestPayload);
-
-	console.log(options.body.view.blocks);
+	options.body.view.blocks = await constructInputBlocksFromPayload(requestPayload);
 
 	return new Promise(
 		(resolve,reject) => {
-			console.log(options);
 			rp(options)
 				.then(response => {
-					console.log(response);
 					resolve(response);
 				})
 				.catch(err => {
@@ -87,62 +85,102 @@ const sendMessageToSlackResponseUrl = (requestPayload) => {
 	)
 }
 
-const constructInputBlocksFromPayload = (payload) => {
-
-	let parsedPayload = JSON.parse(payload.actions[0].value);
-
-	let headerBlock = {
+let createGreetingBlock = (userName) => {
+	return {
 		"type": "section",
 		"text": {
 			"type": "plain_text",
 			"emoji": true,
+			"text": `:wave: Hi ${userName},`
+		}
+	}
+}
+
+let createHeaderBlock = () => {
+	return {
+		"type": "section",
+		"text": {
+			"type": "plain_text",
 			"text": "Please confirm your suggested time entries for last week:"
 		}
 	}
-	
-	let footerBlock = {
+}
+
+let createFooterBlock = () => {
+	return {
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
 			"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
 		}
 	}
+}
 
-	let createInputBlock = (suggestion) => {
-		let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
-		let blockId = label.hashCode();
-		return {
-			"type": "input",
-			"block_id": `${blockId}`,
-			"label": {
+let createInputBlock = (suggestion) => {
+	let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
+	let blockId = label.hashCode();
+	return {
+		"type": "input",
+		"block_id": `${blockId}`,
+		"label": {
+			"type": "plain_text",
+			"text": label,
+		},
+		"hint": {
+			"type": "plain_text",
+			"text": "Enter your hours here."
+		},
+		"element": {
+			"type": "plain_text_input",
+			"action_id": "plain_input",
+			"placeholder": {
 				"type": "plain_text",
-				"text": label,
-			},
-			"hint": {
-				"type": "plain_text",
-				"text": "Enter your hours above or leave if correct."
-			},
-			"element": {
-				"type": "plain_text_input",
-				"action_id": "plain_input",
-				"placeholder": {
-					"type": "plain_text",
-					"text": `${suggestion.scheduled_hours}`
-				}
+				"text": `${suggestion.scheduled_hours}`
 			}
 		}
 	}
+}
 
-	let blocks = []
-	blocks.push(headerBlock);
-	
-	for (let suggestion of parsedPayload.suggestions){
-		let inputBlock = createInputBlock(suggestion);
-		blocks.push(inputBlock);
-	}
+const constructInputBlocksFromPayload = async (payload) => {
+	return new Promise(async function(resolve,reject){
+		await getUserNameFromEmailAddress(payload)
+			.then(userName => {
+				let parsedPayload = JSON.parse(payload.actions[0].value);
+				let greetingBlock = createGreetingBlock(userName);
+				let headerBlock = createHeaderBlock();
+				let footerBlock = createFooterBlock();
+				let blocks = []
+				blocks.push(greetingBlock);
+				blocks.push(headerBlock);
+				for (let suggestion of parsedPayload.suggestions){
+					let inputBlock = createInputBlock(suggestion);
+					blocks.push(inputBlock);
+				}
+				blocks.push(footerBlock);
+				resolve(blocks);
+			})
+			.catch(err => {
+				console.log('Error in constructInputBlocksFromPayload(): ' + err);
+			})
+			.finally(function(){
+			})
+	})
+}
 
-	blocks.push(footerBlock);
-	return blocks;
+const getUserNameFromEmailAddress = async(payload) => {
+	return new Promise(async function(resolve,reject){
+		await Slack.users.info({
+			user: `${payload.user.id}`
+		}).then(user => {
+			let userName = user.user.profile.real_name;
+			let bothNames = userName.split(' ');
+			let firstName = bothNames[0];
+			resolve(firstName);
+		})
+		.catch(err => {
+			console.log('Error in getUserNameFromEmailAddress(): ' + err);
+		})
+	})
 }
 
 String.prototype.hashCode = function() {
@@ -154,4 +192,4 @@ String.prototype.hashCode = function() {
 		hash |= 0; // Convert to 32bit integer
 	}
 	return hash;
-};
+}

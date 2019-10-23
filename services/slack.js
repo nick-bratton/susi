@@ -59,9 +59,3 @@ exports.findAndMessageUser = (payload) => {
 		})
 	})
 }
-
-
-// https://api.slack.com/tutorials/intro-to-message-buttons
-// https://api.slack.com/block-kit/surfaces/modals#updating_views
-// https://api.slack.com/web#posting_json
-// https://api.slack.com/reference/block-kit/views
