@@ -97,13 +97,16 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	return suggestionsAndConfirmations;
 }
 
-const getEntryIdentifiers = (entries) => {
+const getEntryIdentifiers = (entries, includeScheduledHours = false) => {
 	let identifiers = [];
 	for (let e of entries){
 		let identifier = {};
 		identifier.date = e.date;
 		identifier.user_id = e.user_id;
 		identifier.assignable_id = e.assignable_id;
+		if (includeScheduledHours){
+			identifier.scheduled_hours = e.scheduled_hours;
+		}
 		identifiers.push(identifier);
 	}
 	return identifiers;
@@ -145,15 +148,33 @@ const makeDateReadable = (yyyymmdd) => {
 	return readableDate;
 }
 
-const convertYYYYMMDDToNumber = (yyyymmdd) => {
-	yyyymmdd = yyyymmdd.split('-');
-	return Number(yyyymmdd[2]+yyyymmdd[1]+yyyymmdd[0]);
-}
-
-const sortDatesTemporally = (dates) => {
-	dates.sort(function(a,b){
-		return convertYYYYMMDDToNumber(a) - convertYYYYMMDDToNumber(b);
-	});
+const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
+	let yyyymmdd;
+	let number = dateStringArray[1];
+	number = number.replace('.', '');
+	let year = dateStringArray[3];
+	let month = '';
+	let monthLookup = {
+		'January': '01',
+		'February': '02',
+		'March': '03',
+		'April': '04',
+		'May': '05',
+		'June': '06',
+		'July': '07',
+		'August': '08',
+		'September': '09',
+		'October': '10',
+		'November': '11',
+		'December': '12'
+	}
+	for (let [key, value] of Object.entries(monthLookup)){
+		if (key == dateStringArray[2]){
+			month = value;
+		}
+	}
+	yyyymmdd = `${year}` + '-' + `${month}` + '-' + `${number}`;
+	return yyyymmdd;
 }
 
 exports.getWeeklyEntries = () => {
@@ -161,24 +182,29 @@ exports.getWeeklyEntries = () => {
 	return rp(requestOptions)
 }
 
-exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
+exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
+
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
 	for (let id of activeIds){
-		if (_.filter(unconfirmedEntries, {'user_id': id }).length > 0){
+		if (_.filter(unconfirmedEntryIdentifiers, {'user_id': id }).length > 0){
 			let emailAddress = await getUserEmailFrom10KUserID(id);
-			let dates = [];
-			for (let entry of _.filter(unconfirmedEntries, {'user_id': id })){
-				dates.push(entry.date);
-			}
-			sortDatesTemporally(dates);
-			for (let entry of dates){
-				makeDateReadable(entry);
+			let suggestions = [];
+			for (let entry of _.filter(unconfirmedEntryIdentifiers, {'user_id': id })){
+				entry = appendScheduledHoursToUnconfirmedEntryIdentifier(entry, allWeeklyEntries);
+				entry.date = makeDateReadable(entry.date);
+				entry.assignable_name = await this.getAssignableNameFromAssignableId(entry.assignable_id)
+				suggestions.push({
+					'date': entry.date,
+					'assignable_id': entry.assignable_id,
+					'assignable_name': entry.assignable_name,
+					'scheduled_hours': entry.scheduled_hours
+				});
 			}
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
 				payloads.push({
 					'emailAddress': emailAddress,
-					'dates': dates
+					'suggestions': suggestions
 				});
 			}
 		}
@@ -186,10 +212,134 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntries) => {
 	return payloads;
 }
 
-exports.getUnconfirmedEntries = async(weeklyEntries) => {
+const appendScheduledHoursToUnconfirmedEntryIdentifier = (unconfirmedEntryIdentifier, allWeeklyEntries) => {
+	let match = _.find(allWeeklyEntries, unconfirmedEntryIdentifier);
+	unconfirmedEntryIdentifier.scheduled_hours = match.scheduled_hours;
+	return unconfirmedEntryIdentifier;
+}
+
+exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 	let suggestionIdentifiers = getEntryIdentifiers(suggestionsAndConfirmations.suggestions);
 	let confirmationIndentifiers = getEntryIdentifiers(suggestionsAndConfirmations.confirmations);
-	let unconfirmedEntries = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
-	return unconfirmedEntries;
+	let unconfirmedEntryIdentifiers = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
+	return unconfirmedEntryIdentifiers;
+}
+
+exports.getUserIdFromUserEmail = async(payload) => {
+	let userEmail = payload.user.username + '@ixds.com';
+	let options = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: 'https://vnext-api.10000ft.com/api/v1/users',
+		headers: {
+			'cache-control': 'no-store',
+			'content-type': 'application/json',
+			'auth': `${process.env.VNEXT}`
+		}
+	};
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					let body = JSON.parse(response.body);
+					for (let user of body.data){
+						if (user.email == userEmail){
+							resolve(user.id);
+						}
+					}
+				})
+				.catch(err => {
+					console.log('Error in postEntry(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					// console.log('Posted time entry.');
+				})
+		}
+	)
+}
+
+exports.constructPostBodies = (payload) => {
+	let postBodies = [];
+	let submittedHoursWithBoundBlockIds = []
+	for (let [key, value] of Object.entries(payload.view.state.values)) {
+		submittedHoursWithBoundBlockIds.push({
+			block_id: `${key}`,
+			hours: `${value.plain_input.value}`
+		});
+	}
+	for (let block of payload.view.blocks){
+		let hours;
+		if (block.type == 'input'){
+			for (let submission of submittedHoursWithBoundBlockIds){
+				if (submission.block_id == block.block_id){
+					hours = submission.hours;
+				}
+			}
+			let body = constructBodyForPOSTRequest(block.label.text, hours);
+			postBodies.push(body); 
+		}
+	}
+	return postBodies;
+}
+
+exports.postSubmissions = async(bodies, id) => {
+	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	await Promise.all(bodies.map(body => 
+		rp({
+			method: 'POST',
+			uri: `${uri}`,
+			headers: {
+				'cache-control': 'no-store',
+				'content-type': 'application/json',
+				'auth': `${process.env.VNEXT}`
+			},
+			body: body,
+			json: true
+		}))
+	)
+}
+
+const constructBodyForPOSTRequest = (metadata, hours) => {
+	let body = {
+		'hours': `${hours}`
+	};
+	let subs = metadata.split(' ');
+	body.date = constructYYYYMMDDFromReadableDate(subs.slice(0,4));
+	let assignable_id = subs.splice(subs.length-1)[0];
+	assignable_id = assignable_id.replace('(', '');
+	assignable_id = assignable_id.replace(')', '');
+	body.assignable_id = assignable_id;
+	return body;
+}
+
+exports.getAssignableNameFromAssignableId = async(assignableId) => {
+	let uri = baseUri + 'assignables/' + assignableId;
+	let options = {
+		method: 'GET',
+		resolveWithFullResponse: true,
+		uri: `${uri}`,
+		headers: {
+			'cache-control': 'no-store',
+			'content-type': 'application/json',
+			'auth': `${auth}`
+		}
+	};
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					let body = JSON.parse(response.body);
+					resolve(body.name);
+				})
+				.catch(err => {
+					console.log('Error caught in Promise returned from getProjectNameFromAssignableId(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					// console.log('');
+				})
+		}
+	)
 }

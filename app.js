@@ -3,8 +3,8 @@
 require('dotenv').config()
 
 const Cron = require('cron').CronJob;
-const tenK = require('./services/tenK.js')
-const slack = require('./services/slack.js')
+const tenK = require('./services/tenK.js');
+const slack = require('./services/slack.js');
 
 let interval = '';
 let schedule = false;
@@ -19,13 +19,13 @@ else if (process.env.MODE == 'pro_beta'){
 }
 
 function main(){
-	let unconfirmedEntries, messagePayloads;
+	let unconfirmedEntryIdentifiers, messagePayloads;
 	tenK.getWeeklyEntries()
 		.then(async function (response) {
 			let r = JSON.parse(response.body);
 			let allWeeklyEntries = r.data;
-			unconfirmedEntries = await tenK.getUnconfirmedEntries(allWeeklyEntries);
-			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntries);
+			unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
+			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
 		})
 		.catch(function (err) {
 			console.log('Caught error in app.js main(): ' + err);
