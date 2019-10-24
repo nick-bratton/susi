@@ -40,7 +40,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 		case 'view_submission':
 				if (verified){
 					await confirmSubmission(res, payload);
-					handleSubmission(payload, viewId);
+					handleSubmission(payload, viewId, res);
 				}
 				else{
 					res.status(403).end("Access forbidden");
@@ -51,16 +51,24 @@ app.post('/', urlEncodedParser, async(req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
-const handleSubmission = async(payload, viewId) => {
+const handleSubmission = async(payload, viewId, res) => {
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
 	await tenK.postSubmissions(reqBodies, id)
 	.then(value => {
-		// value is undefined....
 		confirmSuccess(viewId);
 	})
 	.catch(err => {
-		// err is not undefined
+		// need to decided how to respond based 
+		// on which error was received 
+		// AND
+		// which block_id was responsible
+		// res.send({
+		// 	"response_action": "errors",
+		// 	"errors:" {
+		// 		"block_id": "",
+		// 	}
+		// })
 		confirmFailure(viewId);
 	})
 }
