@@ -202,7 +202,7 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 	return unconfirmedEntryIdentifiers;
 }
 
-const getUserIdFromUserEmail = async(payload) => {
+exports.getUserIdFromUserEmail = async(payload) => {
 	let userEmail = payload.user.username + '@ixds.com';
 	let options = {
 		method: 'GET',
@@ -230,27 +230,13 @@ const getUserIdFromUserEmail = async(payload) => {
 					reject(err);
 				})
 				.finally(function(){
-					console.log('Posted time entry.');
+					// console.log('Posted time entry.');
 				})
 		}
 	)
 }
 
-exports.createPostBodies = async(payload) => {
-	let userId = await getUserIdFromUserEmail(payload);
-	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + userId + '/time_entries';
-	let options = {
-		method: 'POST',
-		resolveWithFullResponse: true,
-		uri: `${uri}`,
-		headers: {
-			'cache-control': 'no-store',
-			'content-type': 'application/json',
-			'auth': `${process.env.VNEXT}`
-		},
-		body: {},
-		json: true
-	}
+exports.constructPostBodies = (payload) => {
 	let postBodies = [];
 	let submittedHoursWithBoundBlockIds = []
 	for (let [key, value] of Object.entries(payload.view.state.values)) {
@@ -272,6 +258,37 @@ exports.createPostBodies = async(payload) => {
 		}
 	}
 	return postBodies;
+}
+
+exports.postSubmissions = async(bodies, id) => {
+	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	for (let body of bodies){
+		console.log(body);
+	}
+	await Promise.all(bodies.map(body => 
+		rp({
+			method: 'POST',
+			resolveWithFullResponse: true,
+			uri: `${uri}`,
+			headers: {
+				'cache-control': 'no-store',
+				'content-type': 'application/json',
+				'auth': `${process.env.VNEXT}`
+			},
+			body: body,
+			json: true
+		}
+	)))
+	.then(response => {
+		console.log(response);
+		// resolve(response);
+	})
+	.catch(err => {
+		console.log('A Promise rejected in tenK.postSubmissions(): ' + err);
+	})
+	.finally(function(){
+		//
+	});
 }
 
 const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
