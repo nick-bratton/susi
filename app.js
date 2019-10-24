@@ -58,6 +58,6 @@ if (!schedule){
 // schedule a Cron job:
 new Cron(interval, function() {
 	if (schedule){
-		// main();
+		main();
 	}
 }, null, true, 'Europe/Berlin');
