@@ -76,7 +76,7 @@ In theory, no API should be required to pass requests between Slack and 10000ft.
 
 1. ~~The user gets a message with a dialog and a confirm button.~~
 2. ~~The user either confirms what was suggested, or enters a number in the dialog, and then confirms.~~
-3. Upon confirming, a POST request is sent from Slack to 10000ft. 
+3. ~~Upon confirming, a POST request is sent from Slack to 10000ft.~~
 4. The user is notified that their request was sent (and ideally, submitted successfully).
 
 See the Slack API documentation on [handling responses from dialogs](https://api.slack.com/dialogs#response) but note that this information is 'outmoded' but not yet deprecated.
@@ -96,5 +96,11 @@ but other fields can be included like `tasks` and `notes`. (It is probably a goo
 Care must be taken to ensure that POST requests with `Content-Type: application/x-www-form-urlencoded` are properly handled/decoded by the 10000ft API. Payloads constructed from Slack would be encoded thusly. 
 
 ## Handling Errors
+
+### Slack Modal
+
+Currently there is no check on what the user submits in a modal. We can prompt them and prevent submissions until fields only contain properly-ormatted and correct-type data. Check the Slack API documentation on [how to do this](https://api.slack.com/surfaces/modals/using#displaying_errors_in_views).
+
+### General
 
 Care was made to use Promise based JavaScript where possible. Errors will be caught, but just console logged. The `catch` and `finally` blocks should be developed throughout the code base as a starting point.

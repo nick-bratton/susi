@@ -16,12 +16,13 @@ Slack = new WebClient(process.env.SLACK_PRO);
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
 app.post('/', urlEncodedParser, async(req, res) => {
-	res.sendStatus(200); 
+	// res.sendStatus(200); 
 	let payload = JSON.parse(req.body.payload);
 	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined; 	// Using the 'token' request verification method is deprecated and we should move towards validating with signed secrets.
 	switch (payload.type){																																							// See here: https://api.slack.com/docs/verifying-requests-from-slack#about
 		case 'block_actions':
 			if (verified){
+				res.sendStatus(200);
 				sendMessageToSlackResponseUrl(payload);
 			}
 			else{
@@ -30,6 +31,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 			break;
 		case 'view_submission':
 				if (verified){
+					await confirmSubmission(res, payload);
 					handleSubmission(payload);
 				}
 				else{
@@ -44,10 +46,43 @@ app.listen(port, () => console.log(`Listening on port ${port}!`));
 const handleSubmission = async(payload) => {
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
-	await tenK.postSubmissions(reqBodies, id);
-	console.log('handled');
+	let success = await tenK.postSubmissions(reqBodies, id);
+	if(success){
+		// update slack modal view 
+		console.log('here...');
+	}
 }
 
+
+const confirmSubmission = async(res, viewSubmissionPayload) => {
+	res.send({
+		"response_action": "update",
+		"view": {
+			"type": "modal",
+			"title": {
+				"type": "plain_text",
+				"text": `Thank you!`
+			},
+			"blocks": [
+				{
+					"type": "section",
+					"text": {
+						"type": "plain_text",
+						"text": `I'm sending your entries over to 10000ft now... `
+					}
+				},
+				{
+					"type": "section",
+					"text":{
+						"emoji": true,
+						"type": "plain_text",
+						"text": ":rocket:"
+					}
+				}
+			]
+		}
+	})
+}
 
 const sendMessageToSlackResponseUrl = async(requestPayload) => {
 
@@ -83,9 +118,7 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 			}
 		}
 	}
-
 	options.body.view.blocks = await constructInputBlocksFromPayload(requestPayload);
-
 	return new Promise(
 		(resolve,reject) => {
 			rp(options)

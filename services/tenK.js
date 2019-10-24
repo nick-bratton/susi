@@ -265,7 +265,7 @@ exports.postSubmissions = async(bodies, id) => {
 	for (let body of bodies){
 		console.log(body);
 	}
-	await Promise.all(bodies.map(body => 
+	return await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',
 			resolveWithFullResponse: true,
@@ -279,16 +279,6 @@ exports.postSubmissions = async(bodies, id) => {
 			json: true
 		}
 	)))
-	.then(response => {
-		console.log(response);
-		// resolve(response);
-	})
-	.catch(err => {
-		console.log('A Promise rejected in tenK.postSubmissions(): ' + err);
-	})
-	.finally(function(){
-		//
-	});
 }
 
 const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
