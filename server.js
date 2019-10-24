@@ -15,15 +15,23 @@ Slack = new WebClient(process.env.SLACK_PRO);
 
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
+// is it ok for this to be a global variable
+// or will we have collisions?
+//
+let viewId;
+//
+//
+// 	//	//	//	//	//	//	//	//	//	//	//
+
 app.post('/', urlEncodedParser, async(req, res) => {
-	// res.sendStatus(200); 
 	let payload = JSON.parse(req.body.payload);
 	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined; 	// Using the 'token' request verification method is deprecated and we should move towards validating with signed secrets.
 	switch (payload.type){																																							// See here: https://api.slack.com/docs/verifying-requests-from-slack#about
 		case 'block_actions':
 			if (verified){
 				res.sendStatus(200);
-				sendMessageToSlackResponseUrl(payload);
+				let viewOpenResponse = await sendMessageToSlackResponseUrl(payload);
+				viewId = viewOpenResponse.view.id;
 			}
 			else{
 				res.status(403).end("Access forbidden");
@@ -32,7 +40,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 		case 'view_submission':
 				if (verified){
 					await confirmSubmission(res, payload);
-					handleSubmission(payload);
+					handleSubmission(payload, viewId);
 				}
 				else{
 					res.status(403).end("Access forbidden");
@@ -43,18 +51,69 @@ app.post('/', urlEncodedParser, async(req, res) => {
 
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
-const handleSubmission = async(payload) => {
+const handleSubmission = async(payload, viewId) => {
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
 	let success = await tenK.postSubmissions(reqBodies, id);
 	if(success){
-		// update slack modal view 
-		console.log('here...');
+		await confirmSuccess(viewId);
+	}
+	else {
+		// await confirmFailure(viewId);
 	}
 }
 
+const confirmSuccess = async(viewId) => {
+	let options = {
+		method: 'POST',
+		uri:'https://slack.com/api/views.update',
+		headers: {
+			'content-type': 'application/json',
+			'authorization': `Bearer ${slackAuth}`
+		},
+		json: true,
+		body: {
+			"view_id": `${viewId}`,
+			"view": {
+				"type": "modal",
+				"callback_id": "modal-with-input",
+				"title": {
+					"type": "plain_text",
+					"text": "10K Reminder",
+					"emoji": true
+				},
+				"blocks": [
+					{
+						"type": "section",
+						"text": {
+							"type": "plain_text",
+							"text": `Success!`
+						}
+					},
+				]
+			}
+		}
+	}
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					console.log(response);
+					resolve(response);
+				})
+				.catch(err => {
+					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					console.log('Finally sendMessageToSlackResponseUrl()');
+				})
+		}
+	)
+}
 
-const confirmSubmission = async(res, viewSubmissionPayload) => {
+
+const confirmSubmission = async(res) => {
 	res.send({
 		"response_action": "update",
 		"view": {
