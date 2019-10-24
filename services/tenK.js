@@ -152,6 +152,35 @@ const makeDateReadable = (yyyymmdd) => {
 	return readableDate;
 }
 
+const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
+	let yyyymmdd;
+	let number = dateStringArray[1];
+	number = number.replace('.', '');
+	let year = dateStringArray[3];
+	let month = '';
+	let monthLookup = {
+		'January': '01',
+		'February': '02',
+		'March': '03',
+		'April': '04',
+		'May': '05',
+		'June': '06',
+		'July': '07',
+		'August': '08',
+		'September': '09',
+		'October': '10',
+		'November': '11',
+		'December': '12'
+	}
+	for (let [key, value] of Object.entries(monthLookup)){
+		if (key == dateStringArray[2]){
+			month = value;
+		}
+	}
+	yyyymmdd = `${year}` + '-' + `${month}` + '-' + `${number}`;
+	return yyyymmdd;
+}
+
 exports.getWeeklyEntries = () => {
 	requestOptions.uri = uriToCheckWeeklyTimeEntries();
 	return rp(requestOptions)
@@ -262,13 +291,9 @@ exports.constructPostBodies = (payload) => {
 
 exports.postSubmissions = async(bodies, id) => {
 	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
-	for (let body of bodies){
-		console.log(body);
-	}
-	return await Promise.all(bodies.map(body => 
+	await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',
-			resolveWithFullResponse: true,
 			uri: `${uri}`,
 			headers: {
 				'cache-control': 'no-store',
@@ -277,37 +302,8 @@ exports.postSubmissions = async(bodies, id) => {
 			},
 			body: body,
 			json: true
-		}
-	)))
-}
-
-const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
-	let yyyymmdd;
-	let number = dateStringArray[1];
-	number = number.replace('.', '');
-	let year = dateStringArray[3];
-	let month = '';
-	let monthLookup = {
-		'January': '01',
-		'February': '02',
-		'March': '03',
-		'April': '04',
-		'May': '05',
-		'June': '06',
-		'July': '07',
-		'August': '08',
-		'September': '09',
-		'October': '10',
-		'November': '11',
-		'December': '12'
-	}
-	for (let [key, value] of Object.entries(monthLookup)){
-		if (key == dateStringArray[2]){
-			month = value;
-		}
-	}
-	yyyymmdd = `${year}` + '-' + `${month}` + '-' + `${number}`;
-	return yyyymmdd;
+		}))
+	)
 }
 
 const constructBodyForPOSTRequest = (metadata, hours) => {

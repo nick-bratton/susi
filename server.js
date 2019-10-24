@@ -54,13 +54,15 @@ app.listen(port, () => console.log(`Listening on port ${port}!`));
 const handleSubmission = async(payload, viewId) => {
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
-	let success = await tenK.postSubmissions(reqBodies, id);
-	if(success){
-		await confirmSuccess(viewId);
-	}
-	else {
-		// await confirmFailure(viewId);
-	}
+	await tenK.postSubmissions(reqBodies, id)
+	.then(value => {
+		// value is undefined....
+		confirmSuccess(viewId);
+	})
+	.catch(err => {
+		// err is not undefined
+		confirmFailure(viewId);
+	})
 }
 
 const confirmSuccess = async(viewId) => {
@@ -79,7 +81,12 @@ const confirmSuccess = async(viewId) => {
 				"callback_id": "modal-with-input",
 				"title": {
 					"type": "plain_text",
-					"text": "10K Reminder",
+					"text": "Success!",
+					"emoji": true
+				},
+				"close": {
+					"type": "plain_text",
+					"text": "Finish",
 					"emoji": true
 				},
 				"blocks": [
@@ -87,7 +94,72 @@ const confirmSuccess = async(viewId) => {
 						"type": "section",
 						"text": {
 							"type": "plain_text",
-							"text": `Success!`
+							"text": "Your hours were successfully submitted to 10000ft"
+						}
+					},
+					{
+						"type": "section",
+						"text": {
+							"type": "plain_text",
+							"text": "Nice work :v:"
+						}
+					},
+				]
+			}
+		}
+	}
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					resolve(response);
+				})
+				.catch(err => {
+					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					// console.log('Finally sendMessageToSlackResponseUrl()');
+				})
+		}
+	)
+}
+
+const confirmFailure = async(viewId) => {
+	let options = {
+		method: 'POST',
+		uri:'https://slack.com/api/views.update',
+		headers: {
+			'content-type': 'application/json',
+			'authorization': `Bearer ${slackAuth}`
+		},
+		json: true,
+		body: {
+			"view_id": `${viewId}`,
+			"view": {
+				"type": "modal",
+				"callback_id": "modal-with-input",
+				"title": {
+					"type": "plain_text",
+					"text": "Oh no!"
+				},
+				"close": {
+					"type": "plain_text",
+					"text": "Cancel",
+				},
+				"blocks": [
+					{
+						"type": "section",
+						"text": {
+							"type": "mrkdwn",
+							"text": ":face_with_head_bandage: Something seems to have gone wrong."
+						}
+					},
+					{
+						"type": "section",
+						"text": {
+							"type": "mrkdwn",
+							"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
 						}
 					},
 				]
