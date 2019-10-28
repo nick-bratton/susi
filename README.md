@@ -1,3 +1,5 @@
+NOTE: This documentation needs rewriting as of 28.10.2019
+
 # Susi: Third Party Extension for Slack / 10000ft
 
 Susi is a Node script that periodically checks an organization's [10000ft](https://github.com/10Kft/10kft-api) time entries and notififies the organization's employees via [Slack](https://slack.com) when they have unconfirmed entries. Whereas 10000ft offers a web interface for time-tracking, it is mostly just a database. This script treats it as such, and aims to integrate API calls to the 10000ft backend into a Slack bot's interactive messages. 
