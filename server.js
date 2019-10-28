@@ -201,7 +201,6 @@ const confirmFailure = async(viewId) => {
 		(resolve,reject) => {
 			rp(options)
 				.then(response => {
-					// console.log(response);
 					resolve(response);
 				})
 				.catch(err => {
@@ -331,7 +330,6 @@ let createInputBlock = (suggestion) => {
 	let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
 	let blockId = 'bid' + label.hashCode();
 	blockId = blockId.replace('-', '');
-	// console.log(blockId, typeof blockId);
 	return {
 		"type": "input",
 		"block_id": `${blockId}`,
@@ -370,7 +368,6 @@ const constructInputBlocksFromPayload = async (payload) => {
 					blocks.push(inputBlock);
 				}
 				blocks.push(footerBlock);
-				// console.log(blocks);
 				resolve(blocks);
 			})
 			.catch(err => {
@@ -403,7 +400,7 @@ String.prototype.hashCode = function() {
 	for (i = 0; i < this.length; i++) {
 		chr   = this.charCodeAt(i);
 		hash  = ((hash << 5) - hash) + chr;
-		hash |= 0; // Convert to 32bit integer
+		hash |= 0;
 	}
 	return hash;
 }
