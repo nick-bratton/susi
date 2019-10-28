@@ -4,13 +4,11 @@ require('dotenv').config()
 const rp = require('request-promise');
 const _ = require('lodash');
 
-let baseUri = 'https://api.10000ft.com/api/v1/';
-let auth = process.env.TENK;
+// let baseUri = 'https://api.10000ft.com/api/v1/';
+// let auth = process.env.TENK;
 
-// if (process.env.MODE == 'dev'){
-// 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-// 	auth = process.env.VNEXT;
-// }
+let baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+let auth = process.env.VNEXT;
 
 let requestOptions = {
 	method: 'GET',

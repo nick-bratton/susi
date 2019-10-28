@@ -38,18 +38,52 @@ app.post('/', urlEncodedParser, async(req, res) => {
 			}
 			break;
 		case 'view_submission':
-				if (verified){
-					await confirmSubmission(res, payload);
+			if (verified){
+				let errors = validateInputDataFormat(payload);
+				if (Object.keys(errors).length > 0){
+					let body = {};
+					body.errors = errors;
+					body.response_action = "errors";
+					res.send(body);
+				}
+				else {
+					await confirmSubmission(res);
 					handleSubmission(payload, viewId, res);
 				}
-				else{
-					res.status(403).end("Access forbidden");
-				}
+			}
+			else{
+				res.status(403).end("Access forbidden");
+			}
 			break;
 	}
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
+
+const inputIsValid = (value) => {
+	let valid;
+	if (value != null && value != undefined && value < 24 && value >= 0) {
+		valid = true;
+	}
+	else {
+		valid = false;
+	}
+
+	return valid;
+}
+
+const validateInputDataFormat = (payload) => {
+	let errors = {};
+	for (let [key, value] of Object.entries(payload.view.state.values)) {
+		let form_id = key;
+		let input = value.plain_input.value;
+		let valid = inputIsValid(input);
+		if (!valid){
+			errors[form_id] = 'Input must be a number betewen 0 and 24 (e.g., 8, 0, 2.5).';
+		}
+	}
+	return errors;
+}
 
 const handleSubmission = async(payload, viewId, res) => {
 	let reqBodies = tenK.constructPostBodies(payload);
@@ -59,16 +93,6 @@ const handleSubmission = async(payload, viewId, res) => {
 		confirmSuccess(viewId);
 	})
 	.catch(err => {
-		// need to decided how to respond based 
-		// on which error was received 
-		// AND
-		// which block_id was responsible
-		// res.send({
-		// 	"response_action": "errors",
-		// 	"errors:" {
-		// 		"block_id": "",
-		// 	}
-		// })
 		confirmFailure(viewId);
 	})
 }
@@ -127,7 +151,6 @@ const confirmSuccess = async(viewId) => {
 					reject(err);
 				})
 				.finally(function(){
-					// console.log('Finally sendMessageToSlackResponseUrl()');
 				})
 		}
 	)
@@ -178,7 +201,7 @@ const confirmFailure = async(viewId) => {
 		(resolve,reject) => {
 			rp(options)
 				.then(response => {
-					console.log(response);
+					// console.log(response);
 					resolve(response);
 				})
 				.catch(err => {
@@ -186,7 +209,6 @@ const confirmFailure = async(viewId) => {
 					reject(err);
 				})
 				.finally(function(){
-					console.log('Finally sendMessageToSlackResponseUrl()');
 				})
 		}
 	)
@@ -269,7 +291,6 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 					reject(err);
 				})
 				.finally(function(){
-					console.log('Finally sendMessageToSlackResponseUrl()');
 				})
 		}
 	)
@@ -308,7 +329,9 @@ let createFooterBlock = () => {
 
 let createInputBlock = (suggestion) => {
 	let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
-	let blockId = label.hashCode();
+	let blockId = 'bid' + label.hashCode();
+	blockId = blockId.replace('-', '');
+	// console.log(blockId, typeof blockId);
 	return {
 		"type": "input",
 		"block_id": `${blockId}`,
@@ -326,7 +349,7 @@ let createInputBlock = (suggestion) => {
 			"placeholder": {
 				"type": "plain_text",
 				"text": `${suggestion.scheduled_hours}`
-			}
+			}, 
 		}
 	}
 }
@@ -347,6 +370,7 @@ const constructInputBlocksFromPayload = async (payload) => {
 					blocks.push(inputBlock);
 				}
 				blocks.push(footerBlock);
+				// console.log(blocks);
 				resolve(blocks);
 			})
 			.catch(err => {
