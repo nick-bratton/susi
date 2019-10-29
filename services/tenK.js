@@ -4,11 +4,18 @@ require('dotenv').config()
 const rp = require('request-promise');
 const _ = require('lodash');
 
-// let baseUri = 'https://api.10000ft.com/api/v1/';
-// let auth = process.env.TENK;
+let baseUri, auth;
 
-let baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-let auth = process.env.VNEXT;
+if (process.env.MODE === 'dev'){
+	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+	auth = process.env.VNEXT;
+}
+else if (process.env.MODE === 'beta' || process.env.MODE === 'pro'){
+	baseUri = 'https://api.10000ft.com/api/v1/';
+	auth = process.env.TENK;
+}
+
+console.log(baseUri, auth);
 
 let requestOptions = {
 	method: 'GET',
@@ -43,13 +50,15 @@ let eightDaysAgo = () => {
 }
 
 let uriToCheckWeeklyTimeEntries = () => {
-	let uri = `${baseUri}` + 'time_entries?from=';
+	let uri = `${baseUri}time_entries?from=`;
 	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=500&with_suggestions=true';
+	console.log(uri);
 	return uri;
 }
 
 const getUserEmailFrom10KUserID = async(id) => {
 	requestOptions.uri = `${baseUri}users/${id}`;
+	console.log(requestOptions.uri);
 	let user;
 	return new Promise(
 		(resolve,reject) => {
@@ -181,7 +190,6 @@ exports.getWeeklyEntries = () => {
 }
 
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
-
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
 	for (let id of activeIds){
@@ -226,14 +234,16 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 
 exports.getUserIdFromUserEmail = async(payload) => {
 	let userEmail = payload.user.username + '@ixds.com';
+	let uri = `${baseUri}` + 'users';
+	console.log(uri);
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		uri: 'https://vnext-api.10000ft.com/api/v1/users',
+		uri: `${uri}`,
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
-			'auth': `${process.env.VNEXT}`
+			'auth': `${auth}`
 		}
 	};
 	return new Promise(
@@ -283,7 +293,8 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	let uri = `${baseUri}` + 'users/' + id + '/time_entries';
+	console.log(uri);
 	await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',
@@ -291,7 +302,7 @@ exports.postSubmissions = async(bodies, id) => {
 			headers: {
 				'cache-control': 'no-store',
 				'content-type': 'application/json',
-				'auth': `${process.env.VNEXT}`
+				'auth': `${auth}`
 			},
 			body: body,
 			json: true
@@ -313,7 +324,8 @@ const constructBodyForPOSTRequest = (metadata, hours) => {
 }
 
 exports.getAssignableNameFromAssignableId = async(assignableId) => {
-	let uri = baseUri + 'assignables/' + assignableId;
+	let uri = `${baseUri}` + 'assignables/' + assignableId;
+	console.log(uri);
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,

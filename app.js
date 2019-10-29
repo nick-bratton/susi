@@ -9,11 +9,11 @@ const slack = require('./services/slack.js');
 let interval = '';
 let schedule = false;
 
-if (process.env.MODE == 'pro'){
+if (process.env.MODE === 'pro'){
 	interval = '0 10 * * MON';
 	schedule = true;
 }
-else if (process.env.MODE == 'pro_beta'){
+else if (process.env.MODE === 'beta'){
 	interval = '0 16 * * MON-THU';
 	schedule = true;
 }
@@ -44,7 +44,7 @@ const messageContacts = async(payloads) => {
 			console.log('Error in notifyContacts(): ' + err)
 		})
 		.finally(function(){
-			console.log('Done.');
+			// console.log('Done.');
 		});
 }
 
