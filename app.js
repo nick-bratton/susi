@@ -13,10 +13,10 @@ if (process.env.MODE === 'pro'){
 	interval = '0 10 * * MON';
 	schedule = true;
 }
-else if (process.env.MODE === 'beta'){
-	interval = '0 16 * * MON-THU';
-	schedule = true;
-}
+// else if (process.env.MODE === 'beta'){
+// 	interval = '0 10 * * MON-THU';
+// 	schedule = true;
+// }
 
 function main(){
 	let unconfirmedEntryIdentifiers, messagePayloads;
@@ -38,13 +38,13 @@ function main(){
 const messageContacts = async(payloads) => {
 	await Promise.all(payloads.map(payload => slack.findAndMessageUser(payload)))
 		.then(slackUserIds => {
-			// console.log('Notified Slack users: ' + slackUserIds);
+			console.log('Notified Slack users: ' + slackUserIds);
 		})
 		.catch(err => {
 			console.log('Error in notifyContacts(): ' + err)
 		})
 		.finally(function(){
-			// console.log('Done.');
+			console.log('Done.');
 		});
 }
 

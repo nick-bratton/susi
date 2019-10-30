@@ -15,8 +15,6 @@ else if (process.env.MODE === 'beta' || process.env.MODE === 'pro'){
 	auth = process.env.TENK;
 }
 
-console.log(baseUri, auth);
-
 let requestOptions = {
 	method: 'GET',
 	resolveWithFullResponse: true,
