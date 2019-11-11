@@ -223,6 +223,7 @@ const appendScheduledHoursToUnconfirmedEntryIdentifier = (unconfirmedEntryIdenti
 }
 
 exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
+	
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 	let suggestionIdentifiers = getEntryIdentifiers(suggestionsAndConfirmations.suggestions);
 	let confirmationIndentifiers = getEntryIdentifiers(suggestionsAndConfirmations.confirmations);

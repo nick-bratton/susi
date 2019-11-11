@@ -18,20 +18,38 @@ if (process.env.MODE === 'pro'){
 // 	schedule = true;
 // }
 
+const testData = require('./test/fo.example.js');
+console.log('erroneous source data: ');
+console.log(testData.fo);
+
 function main(){
+	// run main as normal and check to see that testdata is formatted just like allWEeklyEntries would be
+	// 
+	// unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
+
+
 	let unconfirmedEntryIdentifiers, messagePayloads;
 	tenK.getWeeklyEntries()
 		.then(async function (response) {
 			let r = JSON.parse(response.body);
 			let allWeeklyEntries = r.data;
-			unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
-			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
+			//
+			//
+			// here is where we should add fabian's test data: 
+			// console.log('allWeeklyEntries: ');
+			// console.log(allWeeklyEntries);
+			unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(testData.fo);
+			console.log();console.log();console.log();
+			console.log(unconfirmedEntryIdentifiers);
+			//
+			messagePayloads = await tenK.constructPayloads(testData.fo, unconfirmedEntryIdentifiers);
+			console.log(messagePayloads);
 		})
 		.catch(function (err) {
 			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
-			messageContacts(messagePayloads);
+			// messageContacts(messagePayloads);
 		})
 }
 

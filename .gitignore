@@ -1,8 +1,5 @@
 whitelist.js
 
-test
-test.js
-
 private
 .env
 .env.local
