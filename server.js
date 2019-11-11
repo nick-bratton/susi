@@ -15,14 +15,6 @@ Slack = new WebClient(process.env.SLACK_PRO);
 
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
-// is it ok for this to be a global variable
-// or will we have collisions?
-//
-let viewId;
-//
-//
-// 	//	//	//	//	//	//	//	//	//	//	//
-
 app.post('/', urlEncodedParser, async(req, res) => {
 	let payload = JSON.parse(req.body.payload);
 	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined; 	// Using the 'token' request verification method is deprecated and we should move towards validating with signed secrets.
@@ -30,8 +22,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 		case 'block_actions':
 			if (verified){
 				res.sendStatus(200);
-				let viewOpenResponse = await sendMessageToSlackResponseUrl(payload);
-				viewId = viewOpenResponse.view.id;
+				await sendMessageToSlackResponseUrl(payload);
 			}
 			else{
 				res.status(403).end("Access forbidden");
@@ -48,7 +39,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 				}
 				else {
 					await confirmSubmission(res);
-					handleSubmission(payload, viewId, res);
+					handleSubmission(payload, payload.view.id, res);
 				}
 			}
 			else{
@@ -212,7 +203,6 @@ const confirmFailure = async(viewId) => {
 		}
 	)
 }
-
 
 const confirmSubmission = async(res) => {
 	res.send({

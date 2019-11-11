@@ -234,15 +234,25 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 exports.getUserIdFromUserEmail = async(payload) => {
 	let userEmail = payload.user.username + '@ixds.com';
 	let uri = `${baseUri}` + 'users';
-	console.log(uri);
+	// baseUri is undefined and this.baseUri is undefined when 
+	// this export is executed in server.js
+	// 
+	// find solution for this later
+	// and add the above uri declaration as the options.uri prop
+	// although this was a dev thing anyway...unnecessary in production
+	//
+	//
+	// same thing would go for `${auth}` 
+	// but actually process.env variables are in scope
+	// so we could make the uri's also env vars
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		uri: `${uri}`,
+		uri: 'https://vnext-api.10000ft.com/api/v1/users',
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
-			'auth': `${auth}`
+			'auth': `${process.env.VNEXT}`
 		}
 	};
 	return new Promise(
@@ -257,7 +267,7 @@ exports.getUserIdFromUserEmail = async(payload) => {
 					}
 				})
 				.catch(err => {
-					console.log('Error in postEntry(): ' + err)
+					console.log('Error in getUserIdFromUserEmail(): ' + err)
 					reject(err);
 				})
 				.finally(function(){
@@ -292,8 +302,11 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	let uri = `${baseUri}` + 'users/' + id + '/time_entries';
-	console.log(uri);
+	// baseUri will be out of scope 
+	// so have to hard code it in for now, 
+	// though we could make it a process.env var later
+	// same thing with the auth
+	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',
@@ -301,7 +314,7 @@ exports.postSubmissions = async(bodies, id) => {
 			headers: {
 				'cache-control': 'no-store',
 				'content-type': 'application/json',
-				'auth': `${auth}`
+				'auth': `${process.env.VNEXT}`
 			},
 			body: body,
 			json: true
