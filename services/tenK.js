@@ -29,7 +29,7 @@ let requestOptions = {
 let yesterday = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
-	day = '' + d.getDate() - 1,
+	day = '' + d.getDate() ,
 	year = d.getFullYear();
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
@@ -256,7 +256,7 @@ exports.getUserIdFromUserEmail = async(payload) => {
 					}
 				})
 				.catch(err => {
-					console.log('Error in postEntry(): ' + err)
+					console.log('Error in getUserIdFromUserEmail(): ' + err)
 					reject(err);
 				})
 				.finally(function(){

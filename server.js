@@ -15,21 +15,39 @@ Slack = new WebClient(process.env.SLACK_PRO);
 
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
-// is it ok for this to be a global variable
-// or will we have collisions?
+// is it ok for these to be a global variable
+// or will we have collisions? 
 //
 let viewId;
+// let payloadForUpdatingMessageAfterConfirmation = {};
 //
+// i highly doubt this is acceptable but let's see....
 //
 // 	//	//	//	//	//	//	//	//	//	//	//
 
 app.post('/', urlEncodedParser, async(req, res) => {
+	
 	let payload = JSON.parse(req.body.payload);
 	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined; 	// Using the 'token' request verification method is deprecated and we should move towards validating with signed secrets.
 	switch (payload.type){																																							// See here: https://api.slack.com/docs/verifying-requests-from-slack#about
 		case 'block_actions':
 			if (verified){
 				res.sendStatus(200);
+
+				// console.log('payload containing response url?:');
+				// console.log(payload.response_url);
+				// console.log(payload.message.blocks);
+				// console.log();
+
+				payloadForUpdatingMessageAfterConfirmation.response_url = payload.response_url;
+				payloadForUpdatingMessageAfterConfirmation.blocks = payload.message.blocks.filter(block => block.block_id != 'confirm_button');
+
+				console.log(payloadForUpdatingMessageAfterConfirmation);
+
+
+
+
+
 				let viewOpenResponse = await sendMessageToSlackResponseUrl(payload);
 				viewId = viewOpenResponse.view.id;
 			}
@@ -48,7 +66,10 @@ app.post('/', urlEncodedParser, async(req, res) => {
 				}
 				else {
 					await confirmSubmission(res);
-					handleSubmission(payload, viewId, res);
+					console.log('handling a view_submission:');
+					console.log(payloadForUpdatingMessageAfterConfirmation);
+					console.log();
+					handleSubmission(payload, viewId, res, payloadForUpdatingMessageAfterConfirmation);
 				}
 			}
 			else{
@@ -85,12 +106,46 @@ const validateInputDataFormat = (payload) => {
 	return errors;
 }
 
-const handleSubmission = async(payload, viewId, res) => {
+const removeButtonInOriginalMessage = async(payload) => {
+	let options = {
+		method: 'POST',
+		uri: `${payload.response_url}`,
+		headers: {
+			'content-type': 'application/json',
+			'authorization': `Bearer ${slackAuth}`
+		},
+		json: true,
+		body: {
+				"blocks": payload.blocks
+		}
+	}
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					resolve(response);
+				})
+				.catch(err => {
+					console.log('Error in removeButtonInOriginalMessage(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+				})
+		}
+	)
+}
+
+const handleSubmission = async(payload, viewId, res, payloadForUpdatingOriginalMessage) => {
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
 	await tenK.postSubmissions(reqBodies, id)
 	.then(value => {
 		confirmSuccess(viewId);
+		//
+		// patch for https://github.com/nick-bratton/susi/issues/5
+		// -->
+		removeButtonInOriginalMessage(payloadForUpdatingOriginalMessage);
+		// <--
 	})
 	.catch(err => {
 		confirmFailure(viewId);
@@ -147,7 +202,7 @@ const confirmSuccess = async(viewId) => {
 					resolve(response);
 				})
 				.catch(err => {
-					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
+					console.log('Error in confirmSuccess(): ' + err)
 					reject(err);
 				})
 				.finally(function(){
@@ -204,7 +259,7 @@ const confirmFailure = async(viewId) => {
 					resolve(response);
 				})
 				.catch(err => {
-					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
+					console.log('Error in confirmFailure(): ' + err)
 					reject(err);
 				})
 				.finally(function(){
