@@ -248,11 +248,11 @@ exports.getUserIdFromUserEmail = async(payload) => {
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		uri: 'https://vnext-api.10000ft.com/api/v1/users',
+		uri: 'https://api.10000ft.com/api/v1/users',
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
-			'auth': `${process.env.VNEXT}`
+			'auth': `${process.env.TENK}`
 		}
 	};
 	return new Promise(
@@ -306,7 +306,7 @@ exports.postSubmissions = async(bodies, id) => {
 	// so have to hard code it in for now, 
 	// though we could make it a process.env var later
 	// same thing with the auth
-	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	let uri = 'https://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',
@@ -314,7 +314,7 @@ exports.postSubmissions = async(bodies, id) => {
 			headers: {
 				'cache-control': 'no-store',
 				'content-type': 'application/json',
-				'auth': `${process.env.VNEXT}`
+				'auth': `${process.env.TENK}`
 			},
 			body: body,
 			json: true
