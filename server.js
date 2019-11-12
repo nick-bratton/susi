@@ -93,6 +93,7 @@ const handleSubmission = async(payload, viewId, res) => {
 
 	// check to see if reqBodies is defined
 	// check to see if id is defined
+
 	await tenK.postSubmissions(reqBodies, id)
 	.then(value => {
 		console.log('value returned from tenK.postSubmissions(): ');
@@ -105,10 +106,6 @@ const handleSubmission = async(payload, viewId, res) => {
 		console.log(err);
 		confirmFailure(viewId);
 	})
-
-
-
-
 }
 
 const confirmSuccess = async(viewId) => {

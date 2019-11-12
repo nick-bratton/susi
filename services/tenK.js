@@ -3,6 +3,8 @@
 require('dotenv').config()
 const rp = require('request-promise');
 const _ = require('lodash');
+const slack = require('./slack.js');
+
 
 let baseUri, auth;
 
@@ -235,8 +237,7 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 }
 
 exports.getUserIdFromUserEmail = async(payload) => {
-	let userEmail = payload.user.username + '@ixds.com';
-	console.log(userEmail);
+	let userEmail = await slack.getUserEmailAddressFromUserId(payload.user.id);
 	// let uri = `${baseUri}` + 'users';
 	// baseUri is undefined and this.baseUri is undefined when 
 	// this export is executed in server.js
@@ -244,7 +245,6 @@ exports.getUserIdFromUserEmail = async(payload) => {
 	// find solution for this later
 	// and add the above uri declaration as the options.uri prop
 	// although this was a dev thing anyway...unnecessary in production
-	//
 	//
 	// same thing would go for `${auth}` 
 	// but actually process.env variables are in scope
@@ -260,9 +260,6 @@ exports.getUserIdFromUserEmail = async(payload) => {
 		}
 	};
 	console.log('awaiting inside getUserIdFromEmail');
-
-	console.log(options);
-
 	return new Promise(
 		(resolve,reject) => {
 			rp(options)
