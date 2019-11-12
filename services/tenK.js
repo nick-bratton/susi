@@ -46,8 +46,9 @@ let eightDaysAgo = () => {
 }
 
 let uriToCheckWeeklyTimeEntries = () => {
-	let uri = `${baseUri}time_entries?from=`;
+	let uri = `${baseUri}/time_entries?from=`;
 	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=500&with_suggestions=true';
+	console.log(uri);
 	return uri;
 }
 
@@ -218,12 +219,25 @@ const appendScheduledHoursToUnconfirmedEntryIdentifier = (unconfirmedEntryIdenti
 	return unconfirmedEntryIdentifier;
 }
 
-exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
-	
+/*exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 	let suggestionIdentifiers = getEntryIdentifiers(suggestionsAndConfirmations.suggestions);
 	let confirmationIndentifiers = getEntryIdentifiers(suggestionsAndConfirmations.confirmations);
 	let unconfirmedEntryIdentifiers = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
+	return unconfirmedEntryIdentifiers;
+}*/
+
+exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
+	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
+	const hasConfirmedEntry = (suggestion) => {
+		for (let confirmation of suggestionsAndConfirmations.confirmations){
+			if (suggestion.assignable_id == confirmation.assignable_id && suggestion.date == confirmation.date){
+				return false;
+			}
+		}
+		return true;
+	}
+	let unconfirmedEntryIdentifiers = suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry);
 	return unconfirmedEntryIdentifiers;
 }
 

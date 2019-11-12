@@ -34,7 +34,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 				if (Object.keys(errors).length > 0){
 					let body = {};
 					body.errors = errors;
-					body.response_action = "errors";3
+					body.response_action = "errors";
 					res.send(body);
 				}
 				else {

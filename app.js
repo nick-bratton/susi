@@ -15,19 +15,28 @@ if (process.env.MODE === 'pro'){
 }
 
 function main(){
-	let unconfirmedEntryIdentifiers, messagePayloads;
+	// let messagePayloads;
 	tenK.getWeeklyEntries()
 		.then(async function (response) {
 			let r = JSON.parse(response.body);
 			let allWeeklyEntries = r.data;
-			unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
-			messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
+			let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
+			let messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
+			return messagePayloads;
 		})
+		.then(async function (payloads){
+			 console.log('in second then...');
+			 console.log();
+			 console.log(payloads);
+			messageContacts(payloads);
+		})
+
 		.catch(function (err) {
 			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
-			messageContacts(messagePayloads);
+			console.log('Main script is finally over');
+			// messageContacts(messagePayloads);
 		})
 }
 
