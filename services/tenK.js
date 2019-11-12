@@ -6,14 +6,17 @@ const _ = require('lodash');
 
 let baseUri, auth;
 
-if (process.env.MODE === 'dev'){
-	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-	auth = process.env.VNEXT;
-}
-else if (process.env.MODE === 'beta' || process.env.MODE === 'pro'){
-	baseUri = 'https://api.10000ft.com/api/v1/';
-	auth = process.env.TENK;
-}
+// if (process.env.MODE === 'dev'){
+// 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+// 	auth = process.env.VNEXT;
+// }
+// else if (process.env.MODE === 'beta' || process.env.MODE === 'pro'){
+// 	baseUri = 'https://api.10000ft.com/api/v1/';
+// 	auth = process.env.TENK;
+// }
+
+baseUri = 'https://api.10000ft.com/api/v1/';
+auth = process.env.TENK;
 
 let requestOptions = {
 	method: 'GET',
@@ -233,7 +236,8 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 
 exports.getUserIdFromUserEmail = async(payload) => {
 	let userEmail = payload.user.username + '@ixds.com';
-	let uri = `${baseUri}` + 'users';
+	console.log(userEmail);
+	// let uri = `${baseUri}` + 'users';
 	// baseUri is undefined and this.baseUri is undefined when 
 	// this export is executed in server.js
 	// 
@@ -248,13 +252,17 @@ exports.getUserIdFromUserEmail = async(payload) => {
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		uri: 'https://api.10000ft.com/api/v1/users',
+		uri: `https://api.10000ft.com/api/v1/users?per_page=500`,
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
 			'auth': `${process.env.TENK}`
 		}
 	};
+	console.log('awaiting inside getUserIdFromEmail');
+
+	console.log(options);
+
 	return new Promise(
 		(resolve,reject) => {
 			rp(options)
@@ -271,7 +279,8 @@ exports.getUserIdFromUserEmail = async(payload) => {
 					reject(err);
 				})
 				.finally(function(){
-					// console.log('Posted time entry.');
+					// resolve('xxx');
+					console.log('Finally in getUserIdFromUserEmail()....');
 				})
 		}
 	)

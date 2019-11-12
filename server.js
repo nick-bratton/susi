@@ -34,7 +34,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 				if (Object.keys(errors).length > 0){
 					let body = {};
 					body.errors = errors;
-					body.response_action = "errors";
+					body.response_action = "errors";3
 					res.send(body);
 				}
 				else {
@@ -77,15 +77,38 @@ const validateInputDataFormat = (payload) => {
 }
 
 const handleSubmission = async(payload, viewId, res) => {
+	console.log('handling a submission with the following payload: ')
+	console.log(payload);
+	console.log();
+	console.log('handling a submission with the following view id: ');
+	console.log(viewId);
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
+	console.log();
+	console.log('reqBodies: ');
+	console.log(reqBodies);
+	console.log();
+	console.log('id: ');
+	console.log(id);
+
+	// check to see if reqBodies is defined
+	// check to see if id is defined
 	await tenK.postSubmissions(reqBodies, id)
 	.then(value => {
+		console.log('value returned from tenK.postSubmissions(): ');
+		console.log(value);
+		// check to see if value is defined 
 		confirmSuccess(viewId);
 	})
 	.catch(err => {
+		console.log('Caught err in tenK.postSubmissions(): ');
+		console.log(err);
 		confirmFailure(viewId);
 	})
+
+
+
+
 }
 
 const confirmSuccess = async(viewId) => {
