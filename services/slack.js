@@ -44,7 +44,6 @@ const postMessageWithPayload = async(id, _payload) => {
 	}
 	else if (process.env.MODE === 'beta'){
 		if (whitelist.emails.includes(_payload.emailAddress)){
-			console.log(_payload.emailAddress);
 			await Slack.chat.postMessage({
 				channel: `${id}`,
 				as_user: true,
@@ -92,9 +91,6 @@ exports.findAndMessageUser = (payload) => {
 }
 
 exports.getUserEmailAddressFromUserId = (userId) => {
-	console.log();console.log();console.log();
-	console.log('passed in following userId to getUserEmailAddressFromUserID: ');
-	console.log(userId);
 	return new Promise(async function(resolve,reject){
 		await Slack.users.info({
 			user: `${userId}`

@@ -5,16 +5,13 @@ const rp = require('request-promise');
 const _ = require('lodash');
 const slack = require('./slack.js');
 
-
 let baseUri, auth;
+let baseUri = 'https://api.10000ft.com/api/v1/';
+let auth = process.env.TENK;
 
 // if (process.env.MODE === 'dev'){
 // 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
 // 	auth = process.env.VNEXT;
-// }
-// else if (process.env.MODE === 'beta' || process.env.MODE === 'pro'){
-// 	baseUri = 'https://api.10000ft.com/api/v1/';
-// 	auth = process.env.TENK;
 // }
 
 baseUri = 'https://api.10000ft.com/api/v1/';
@@ -55,13 +52,11 @@ let eightDaysAgo = () => {
 let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}time_entries?from=`;
 	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=500&with_suggestions=true';
-	console.log(uri);
 	return uri;
 }
 
 const getUserEmailFrom10KUserID = async(id) => {
 	requestOptions.uri = `${baseUri}users/${id}`;
-	console.log(requestOptions.uri);
 	let user;
 	return new Promise(
 		(resolve,reject) => {
@@ -238,17 +233,6 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 
 exports.getUserIdFromUserEmail = async(payload) => {
 	let userEmail = await slack.getUserEmailAddressFromUserId(payload.user.id);
-	// let uri = `${baseUri}` + 'users';
-	// baseUri is undefined and this.baseUri is undefined when 
-	// this export is executed in server.js
-	// 
-	// find solution for this later
-	// and add the above uri declaration as the options.uri prop
-	// although this was a dev thing anyway...unnecessary in production
-	//
-	// same thing would go for `${auth}` 
-	// but actually process.env variables are in scope
-	// so we could make the uri's also env vars
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
@@ -259,7 +243,6 @@ exports.getUserIdFromUserEmail = async(payload) => {
 			'auth': `${process.env.TENK}`
 		}
 	};
-	console.log('awaiting inside getUserIdFromEmail');
 	return new Promise(
 		(resolve,reject) => {
 			rp(options)
@@ -276,8 +259,6 @@ exports.getUserIdFromUserEmail = async(payload) => {
 					reject(err);
 				})
 				.finally(function(){
-					// resolve('xxx');
-					console.log('Finally in getUserIdFromUserEmail()....');
 				})
 		}
 	)
@@ -308,10 +289,6 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	// baseUri will be out of scope 
-	// so have to hard code it in for now, 
-	// though we could make it a process.env var later
-	// same thing with the auth
 	let uri = 'https://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	await Promise.all(bodies.map(body => 
 		rp({
@@ -343,7 +320,6 @@ const constructBodyForPOSTRequest = (metadata, hours) => {
 
 exports.getAssignableNameFromAssignableId = async(assignableId) => {
 	let uri = `${baseUri}` + 'assignables/' + assignableId;
-	console.log(uri);
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
@@ -366,7 +342,6 @@ exports.getAssignableNameFromAssignableId = async(assignableId) => {
 					reject(err);
 				})
 				.finally(function(){
-					// console.log('');
 				})
 		}
 	)

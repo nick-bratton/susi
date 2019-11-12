@@ -17,8 +17,8 @@ const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
 app.post('/', urlEncodedParser, async(req, res) => {
 	let payload = JSON.parse(req.body.payload);
-	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined; 	// Using the 'token' request verification method is deprecated and we should move towards validating with signed secrets.
-	switch (payload.type){																																							// See here: https://api.slack.com/docs/verifying-requests-from-slack#about
+	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined;
+	switch (payload.type){
 		case 'block_actions':
 			if (verified){
 				res.sendStatus(200);
@@ -77,33 +77,14 @@ const validateInputDataFormat = (payload) => {
 }
 
 const handleSubmission = async(payload, viewId, res) => {
-	console.log('handling a submission with the following payload: ')
-	console.log(payload);
-	console.log();
-	console.log('handling a submission with the following view id: ');
-	console.log(viewId);
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
-	console.log();
-	console.log('reqBodies: ');
-	console.log(reqBodies);
-	console.log();
-	console.log('id: ');
-	console.log(id);
-
-	// check to see if reqBodies is defined
-	// check to see if id is defined
-
 	await tenK.postSubmissions(reqBodies, id)
 	.then(value => {
-		console.log('value returned from tenK.postSubmissions(): ');
-		console.log(value);
-		// check to see if value is defined 
 		confirmSuccess(viewId);
 	})
 	.catch(err => {
-		console.log('Caught err in tenK.postSubmissions(): ');
-		console.log(err);
+		console.log('Caught err in tenK.postSubmissions(): ' + err);
 		confirmFailure(viewId);
 	})
 }
@@ -158,7 +139,7 @@ const confirmSuccess = async(viewId) => {
 					resolve(response);
 				})
 				.catch(err => {
-					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
+					console.log('Error in confirmSuccess(): ' + err)
 					reject(err);
 				})
 				.finally(function(){
@@ -215,7 +196,7 @@ const confirmFailure = async(viewId) => {
 					resolve(response);
 				})
 				.catch(err => {
-					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
+					console.log('Error in confirmFailure(): ' + err)
 					reject(err);
 				})
 				.finally(function(){
