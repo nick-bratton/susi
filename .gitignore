@@ -1,4 +1,5 @@
 whitelist.js
+test/data/
 
 private
 .env

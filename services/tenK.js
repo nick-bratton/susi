@@ -46,6 +46,7 @@ let eightDaysAgo = () => {
 }
 
 let uriToCheckWeeklyTimeEntries = () => {
+	// let uri = `${baseUri}/users/496565/time_entries?from=`;
 	let uri = `${baseUri}/time_entries?from=`;
 	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=500&with_suggestions=true';
 	console.log(uri);
@@ -96,10 +97,11 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	}
 	suggestionsAndConfirmations.suggestions = weeklySuggestions;
 	suggestionsAndConfirmations.confirmations = weeklyConfirmations;
+	// console.log(suggestionsAndConfirmations);
 	return suggestionsAndConfirmations;
 }
 
-const getEntryIdentifiers = (entries, includeScheduledHours = false) => {
+/*const getEntryIdentifiers = (entries, includeScheduledHours = false) => {
 	let identifiers = [];
 	for (let e of entries){
 		let identifier = {};
@@ -112,7 +114,7 @@ const getEntryIdentifiers = (entries, includeScheduledHours = false) => {
 		identifiers.push(identifier);
 	}
 	return identifiers;
-}
+}*/
 
 const getWeekdayFromYYYYMMDD = (yyyymmdd) => {
 	let weekday = new Date(yyyymmdd).getDay();
@@ -188,10 +190,15 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
 	for (let id of activeIds){
+		// console.log(_.filter(unconfirmedEntryIdentifiers, {'user_id': id }).length > 0);
 		if (_.filter(unconfirmedEntryIdentifiers, {'user_id': id }).length > 0){
+			// console.log('user' + id + 'has unconfirmed entries: ');
+
 			let emailAddress = await getUserEmailFrom10KUserID(id);
 			let suggestions = [];
 			for (let entry of _.filter(unconfirmedEntryIdentifiers, {'user_id': id })){
+				//  console.log(entry);
+				// console.log('look here');
 				entry = appendScheduledHoursToUnconfirmedEntryIdentifier(entry, allWeeklyEntries);
 				entry.date = makeDateReadable(entry.date);
 				entry.assignable_name = await this.getAssignableNameFromAssignableId(entry.assignable_id)
@@ -202,7 +209,7 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 					'scheduled_hours': entry.scheduled_hours
 				});
 			}
-			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && emailAddress.includes('@ixds.com')){
+			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && ( emailAddress.includes('@ixds.com') || emailAddress.includes('@ixds.de'))){
 				payloads.push({
 					'emailAddress': emailAddress,
 					'suggestions': suggestions

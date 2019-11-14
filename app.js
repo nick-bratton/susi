@@ -15,19 +15,22 @@ if (process.env.MODE === 'pro'){
 }
 
 function main(){
-	// let messagePayloads;
 	tenK.getWeeklyEntries()
 		.then(async function (response) {
 			let r = JSON.parse(response.body);
 			let allWeeklyEntries = r.data;
 			let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 			let messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
+			// console.log(messagePayloads);
 			return messagePayloads;
 		})
 		.then(async function (payloads){
-			 console.log('in second then...');
-			 console.log();
-			 console.log(payloads);
+			// for (let p of payloads){
+			// 	console.log(p.emailAddress);
+			// 	for (let s of p.suggestions){
+			// 		console.log(s);
+			// 	}
+			// }
 			messageContacts(payloads);
 		})
 
