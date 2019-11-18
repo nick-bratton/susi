@@ -5,13 +5,8 @@ const rp = require('request-promise');
 const _ = require('lodash');
 const slack = require('./slack.js');
 
-
 let baseUri = 'https://api.10000ft.com/api/v1/';
 let auth = process.env.TENK;
-// if (process.env.MODE === 'dev'){
-// 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-// 	auth = process.env.VNEXT;
-// }
 
 let requestOptions = {
 	method: 'GET',
@@ -88,7 +83,7 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	let weeklyConfirmations = [];
 	let suggestionsAndConfirmations = {};
 	for (let e in weeklyEntries){
-		if (weeklyEntries[e].is_suggestion == true){
+		if (weeklyEntries[e].is_suggestion === true){
 			weeklySuggestions.push(weeklyEntries[e]);
 		}
 		else {
@@ -97,24 +92,8 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	}
 	suggestionsAndConfirmations.suggestions = weeklySuggestions;
 	suggestionsAndConfirmations.confirmations = weeklyConfirmations;
-	// console.log(suggestionsAndConfirmations);
 	return suggestionsAndConfirmations;
 }
-
-/*const getEntryIdentifiers = (entries, includeScheduledHours = false) => {
-	let identifiers = [];
-	for (let e of entries){
-		let identifier = {};
-		identifier.date = e.date;
-		identifier.user_id = e.user_id;
-		identifier.assignable_id = e.assignable_id;
-		if (includeScheduledHours){
-			identifier.scheduled_hours = e.scheduled_hours;
-		}
-		identifiers.push(identifier);
-	}
-	return identifiers;
-}*/
 
 const getWeekdayFromYYYYMMDD = (yyyymmdd) => {
 	let weekday = new Date(yyyymmdd).getDay();
@@ -190,55 +169,34 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 	let activeIds = getActiveIds(allWeeklyEntries);
 	let payloads = [];
 	for (let id of activeIds){
-		// console.log(_.filter(unconfirmedEntryIdentifiers, {'user_id': id }).length > 0);
-		if (_.filter(unconfirmedEntryIdentifiers, {'user_id': id }).length > 0){
-			// console.log('user' + id + 'has unconfirmed entries: ');
-
+		let suggestedTimeEntriesWithThisUserId = [];
+		for (let entryIdentifier of unconfirmedEntryIdentifiers){
+			if (entryIdentifier.user_id == id){
+				suggestedTimeEntriesWithThisUserId.push(entryIdentifier);
+			}
+		}
+		if(suggestedTimeEntriesWithThisUserId.length > 0){
 			let emailAddress = await getUserEmailFrom10KUserID(id);
-			let suggestions = [];
-			for (let entry of _.filter(unconfirmedEntryIdentifiers, {'user_id': id })){
-				//  console.log(entry);
-				// console.log('look here');
-				entry = appendScheduledHoursToUnconfirmedEntryIdentifier(entry, allWeeklyEntries);
-				entry.date = makeDateReadable(entry.date);
-				entry.assignable_name = await this.getAssignableNameFromAssignableId(entry.assignable_id)
-				suggestions.push({
-					'date': entry.date,
-					'assignable_id': entry.assignable_id,
-					'assignable_name': entry.assignable_name,
-					'scheduled_hours': entry.scheduled_hours
-				});
+			for (let suggestion of suggestedTimeEntriesWithThisUserId){
+				suggestion.date = makeDateReadable(suggestion.date);
+				suggestion.assignable_name = await tenK.getAssignableNameFromAssignableId(suggestion.assignable_id);	
 			}
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && ( emailAddress.includes('@ixds.com') || emailAddress.includes('@ixds.de'))){
 				payloads.push({
 					'emailAddress': emailAddress,
-					'suggestions': suggestions
-				});
+					'suggestions': suggestedTimeEntriesWithThisUserId
+				})
 			}
 		}
 	}
 	return payloads;
 }
 
-const appendScheduledHoursToUnconfirmedEntryIdentifier = (unconfirmedEntryIdentifier, allWeeklyEntries) => {
-	let match = _.find(allWeeklyEntries, unconfirmedEntryIdentifier);
-	unconfirmedEntryIdentifier.scheduled_hours = match.scheduled_hours;
-	return unconfirmedEntryIdentifier;
-}
-
-/*exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
-	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
-	let suggestionIdentifiers = getEntryIdentifiers(suggestionsAndConfirmations.suggestions);
-	let confirmationIndentifiers = getEntryIdentifiers(suggestionsAndConfirmations.confirmations);
-	let unconfirmedEntryIdentifiers = _.differenceWith(suggestionIdentifiers, confirmationIndentifiers, _.isEqual);
-	return unconfirmedEntryIdentifiers;
-}*/
-
 exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 	const hasConfirmedEntry = (suggestion) => {
 		for (let confirmation of suggestionsAndConfirmations.confirmations){
-			if (suggestion.assignable_id == confirmation.assignable_id && suggestion.date == confirmation.date){
+			if (suggestion.assignable_id == confirmation.assignable_id && suggestion.date == confirmation.date && suggestion.user_id == confirmation.user_id){
 				return false;
 			}
 		}
