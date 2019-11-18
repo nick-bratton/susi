@@ -146,78 +146,37 @@ const getUserEmailFrom10KUserID = async(id) => {
 
 constructPayloads(operands.operands, getUnconfirmedEntryIdentifiers(operands.operands))
 
+// let options = {
+// 	method: 'GET',
+// 	resolveWithFullResponse: true,
+// 	uri: 'https://api.10000ft.com/api/v1/users/244135/time_entries?from=2019-11-09&to=2019-11-12&per_page=500&with_suggestions=true',
+// 	headers: {
+// 		'auth': `${process.env.TENK}`
+// 	},
+// }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-let options = {
-	method: 'GET',
-	resolveWithFullResponse: true,
-	uri: 'https://api.10000ft.com/api/v1/users/244135/time_entries?from=2019-11-09&to=2019-11-12&per_page=500&with_suggestions=true',
-	headers: {
-		'auth': `${process.env.TENK}`
-	},
-}
-
-const logEntries = async(options) => {
-  return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-          let body = JSON.parse(response.body);
-					let weeklySAndC = getWeeklySuggestionsAndConfirmations(body.data);
-          // let body = JSON.parse(response);
-					// console.log(body.data);
-					return weeklySAndC
-				})
-				.then(weeklySAndC => {
-					// console.log(weeklySAndC);
-				})
-				.catch(err => {
-					console.log('Error in logEntries(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-					console.log('Got entries.');
-				})
-		}
-	)
-}
-// logEntries(options);
+// const logEntries = async(options) => {
+//   return new Promise(
+// 		(resolve,reject) => {
+// 			rp(options)
+// 				.then(response => {
+//           let body = JSON.parse(response.body);
+// 					let weeklySAndC = getWeeklySuggestionsAndConfirmations(body.data);
+//           // let body = JSON.parse(response);
+// 					// console.log(body.data);
+// 					return weeklySAndC
+// 				})
+// 				.then(weeklySAndC => {
+// 					// console.log(weeklySAndC);
+// 				})
+// 				.catch(err => {
+// 					console.log('Error in logEntries(): ' + err)
+// 					reject(err);
+// 				})
+// 				.finally(function(){
+// 					console.log('Got entries.');
+// 				})
+// 		}
+// 	)
+// }
+// // logEntries(options);
