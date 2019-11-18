@@ -2,7 +2,6 @@
 'use strict';
 require('dotenv').config()
 const rp = require('request-promise');
-const _ = require('lodash');
 const tenK = require('../services/tenK.js');
 const operands = require('./data/ISSUE_8/operands.js');
 
