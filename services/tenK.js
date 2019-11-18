@@ -43,7 +43,7 @@ let eightDaysAgo = () => {
 let uriToCheckWeeklyTimeEntries = () => {
 	// let uri = `${baseUri}/users/496565/time_entries?from=`;
 	let uri = `${baseUri}/time_entries?from=`;
-	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=500&with_suggestions=true';
+	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=1000&with_suggestions=true';
 	console.log(uri);
 	return uri;
 }
@@ -179,7 +179,7 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 			let emailAddress = await getUserEmailFrom10KUserID(id);
 			for (let suggestion of suggestedTimeEntriesWithThisUserId){
 				suggestion.date = makeDateReadable(suggestion.date);
-				suggestion.assignable_name = await tenK.getAssignableNameFromAssignableId(suggestion.assignable_id);	
+				suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	
 			}
 			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && ( emailAddress.includes('@ixds.com') || emailAddress.includes('@ixds.de'))){
 				payloads.push({
@@ -211,7 +211,7 @@ exports.getUserIdFromUserEmail = async(payload) => {
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		uri: `https://api.10000ft.com/api/v1/users?per_page=500`,
+		uri: `https://api.10000ft.com/api/v1/users?per_page=1000`,
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
