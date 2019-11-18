@@ -282,6 +282,7 @@ exports.getUserIdFromUserEmail = async(payload) => {
 }
 
 exports.constructPostBodies = (payload) => {
+	
 	let postBodies = [];
 	let submittedHoursWithBoundBlockIds = []
 	for (let [key, value] of Object.entries(payload.view.state.values)) {
@@ -303,6 +304,7 @@ exports.constructPostBodies = (payload) => {
 		}
 	}
 	return postBodies;
+
 }
 
 exports.postSubmissions = async(bodies, id) => {
