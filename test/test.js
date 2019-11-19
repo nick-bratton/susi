@@ -3,7 +3,7 @@
 require('dotenv').config()
 const rp = require('request-promise');
 const tenK = require('../services/tenK.js');
-const operands = require('./data/ISSUE_8/operands.js');
+const operands = require('./data/ISSUE_9/operands.js');
 
 let auth = process.env.TENK;
 let baseUri = 'https://api.10000ft.com/api/v1/';
@@ -62,6 +62,10 @@ const constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) =
 				})
 			}
 		}
+	}
+	for (let i of payloads){
+		console.log(i.emailAddress);
+		console.log(i.suggestions);
 	}
 	return payloads;
 }

@@ -22,6 +22,8 @@ app.post('/', urlEncodedParser, async(req, res) => {
 		case 'block_actions':
 			if (verified){
 				res.sendStatus(200);
+				console.log('block actions payload:' );
+				console.log(payload);
 				await sendMessageToSlackResponseUrl(payload);
 			}
 			else{
@@ -76,16 +78,60 @@ const validateInputDataFormat = (payload) => {
 	return errors;
 }
 
+const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
+	let pm = JSON.parse(privateMetadata);
+	console.log(pm);
+	let options = {
+		method: 'POST',
+		uri:'https://slack.com/api/chat.update',
+		headers: {
+			'content-type': 'application/json; utf-8',
+			'authorization': `Bearer ${slackAuth}`,
+		},
+		json: true,
+		as_user: true,
+		body: {
+			"channel": `${pm.channel_id}`,
+			"ts": `${pm.ts}`,
+			"text": 'Thanks for using the 10K Reminder!',
+			"attachments": [],
+			"blocks": []
+		}
+	}
+	return new Promise(
+		(resolve,reject) => {
+			rp(options)
+				.then(response => {
+					console.log('response');
+					console.log(response);
+					resolve(response);
+				})
+				.catch(err => {
+					console.log('Error in deleteConfirmButtonInOriginalMessage(): ' + err)
+					reject(err);
+				})
+				.finally(function(){
+					console.log('finally deleteConfirmButtonInOriginalMessage()');
+				})
+		}
+	)
+}
+
 const handleSubmission = async(payload, viewId, res) => {
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
 	await tenK.postSubmissions(reqBodies, id)
-	.then(value => {
-		confirmSuccess(viewId);
+	.then(async value => {
+		await confirmSuccess(viewId).then(async successResponse => {
+			await deleteConfirmButtonInOriginalMessage(payload.view.private_metadata)
+		})
 	})
 	.catch(err => {
 		console.log('Caught err in tenK.postSubmissions(): ' + err);
 		confirmFailure(viewId);
+	})
+	.finally(anything => {
+		console.log('Finally handled submission....');
 	})
 }
 
@@ -143,6 +189,7 @@ const confirmSuccess = async(viewId) => {
 					reject(err);
 				})
 				.finally(function(){
+					console.log('Confirmed Success');
 				})
 		}
 	)
@@ -237,6 +284,16 @@ const confirmSubmission = async(res) => {
 
 const sendMessageToSlackResponseUrl = async(requestPayload) => {
 
+	let privateMetadata = {
+		token: requestPayload.token,
+		ts: requestPayload.container.message_ts,
+		channel_id: requestPayload.container.channel_id,
+		blocks: requestPayload.message.blocks,
+	}
+	console.log(privateMetadata);
+	console.log(privateMetadata.blocks);
+	let pm = JSON.stringify(privateMetadata);
+
 	let options = {
 		method: 'POST',
 		uri:'https://slack.com/api/views.open',
@@ -251,6 +308,7 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 			"view": {
 				"type": "modal",
 				"callback_id": "modal-with-input",
+				"private_metadata": pm,
 				"title": {
 					"type": "plain_text",
 					"text": "10K Reminder",
@@ -266,7 +324,7 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 					"text": "Cancel",
 					"emoji": true
 				},
-			}
+			},
 		}
 	}
 	options.body.view.blocks = await constructInputBlocksFromPayload(requestPayload);
