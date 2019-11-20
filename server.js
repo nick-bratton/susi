@@ -22,8 +22,6 @@ app.post('/', urlEncodedParser, async(req, res) => {
 		case 'block_actions':
 			if (verified){
 				res.sendStatus(200);
-				console.log('block actions payload:' );
-				console.log(payload);
 				await sendMessageToSlackResponseUrl(payload);
 			}
 			else{
@@ -70,7 +68,7 @@ const validateInputDataFormat = (payload) => {
 	for (let [key, value] of Object.entries(payload.view.state.values)) {
 		let form_id = key;
 		let input = value.plain_input.value;
-		let valid = inputIsValid(input);
+		let valid = inputIsValid(input) || key.includes('.notes');
 		if (!valid){
 			errors[form_id] = 'Input must be a number betewen 0 and 24 (e.g., 8, 0, 2.5).';
 		}
@@ -290,8 +288,7 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 		channel_id: requestPayload.container.channel_id,
 		blocks: requestPayload.message.blocks,
 	}
-	console.log(privateMetadata);
-	console.log(privateMetadata.blocks);
+
 	let pm = JSON.stringify(privateMetadata);
 
 	let options = {
@@ -375,20 +372,29 @@ let createFooterBlock = () => {
 	}
 }
 
-let createInputBlock = (suggestion) => {
+let createSuggestionLabelBlock = (suggestion, hash) => {
 	let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
-	let blockId = 'bid' + label.hashCode();
+	let blockId = 'bid' + hash + '.label';
+	blockId = blockId.replace('-', '');
+	return {
+		"type": "section",
+		"block_id": `${blockId}`,
+		"text": {
+			"type": "mrkdwn",
+			"text": `*${label}*`
+		},
+	}
+}
+
+let createInputBlockHours = (suggestion, hash) => {
+	let blockId = 'bid' + hash + '.hours';
 	blockId = blockId.replace('-', '');
 	return {
 		"type": "input",
 		"block_id": `${blockId}`,
 		"label": {
 			"type": "plain_text",
-			"text": label,
-		},
-		"hint": {
-			"type": "plain_text",
-			"text": "Enter your hours here."
+			"text": "Hours",
 		},
 		"element": {
 			"type": "plain_text_input",
@@ -397,7 +403,29 @@ let createInputBlock = (suggestion) => {
 				"type": "plain_text",
 				"text": `${suggestion.scheduled_hours}`
 			}, 
-		}
+		},
+	}
+}
+
+let createinputBlockNotes = (suggestion, hash) => {
+	let blockId = 'bid' + hash + '.notes';
+	blockId = blockId.replace('-', '');
+	return {
+		"type": "input",
+		"block_id": `${blockId}`,
+		"label": {
+			"type": "plain_text",
+			"text": "Notes",
+		},
+		"element": {
+			"type": "plain_text_input",
+			"action_id": "plain_input",
+			"placeholder": {
+				"type": "plain_text",
+				"text": "Notes"
+			}, 
+		},
+		"optional": true,
 	}
 }
 
@@ -413,8 +441,13 @@ const constructInputBlocksFromPayload = async (payload) => {
 				blocks.push(greetingBlock);
 				blocks.push(headerBlock);
 				for (let suggestion of parsedPayload.suggestions){
-					let inputBlock = createInputBlock(suggestion);
-					blocks.push(inputBlock);
+					let hash = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`.hashCode();
+					let suggestionLabelBlock = createSuggestionLabelBlock(suggestion, hash);
+					let inputBlockHours = createInputBlockHours(suggestion, hash);
+					let inputBlockNotes = createinputBlockNotes(suggestion, hash);
+					blocks.push(suggestionLabelBlock);
+					blocks.push(inputBlockHours);
+					blocks.push(inputBlockNotes);
 				}
 				blocks.push(footerBlock);
 				resolve(blocks);
