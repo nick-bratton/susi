@@ -2,13 +2,12 @@
 'use strict';
 require('dotenv').config()
 const rp = require('request-promise');
-const _ = require('lodash');
 const slack = require('./slack.js');
 
-// let baseUri = 'https://api.10000ft.com/api/v1/';
-// let auth = process.env.TENK;
-let baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-let auth = process.env.VNEXT;
+let baseUri = 'https://api.10000ft.com/api/v1/';
+let auth = process.env.TENK;
+// let baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+// let auth = process.env.VNEXT;
 
 let requestOptions = {
 	method: 'GET',
@@ -24,7 +23,7 @@ let requestOptions = {
 let yesterday = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
-	day = '' + d.getDate() ,
+	day = '' + d.getDate() - 1,
 	year = d.getFullYear();
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
@@ -45,7 +44,6 @@ let eightDaysAgo = () => {
 let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}/time_entries?from=`;
 	uri += eightDaysAgo() + '&to=' + yesterday() + '&per_page=1000&with_suggestions=true';
-	console.log(uri);
 	return uri;
 }
 
@@ -212,12 +210,12 @@ exports.getUserIdFromUserEmail = async(payload) => {
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		// uri: `https://api.10000ft.com/api/v1/users?per_page=1000`,
-		uri: 'https://vnext-api.10000ft.com/api/v1/users?per_page=1000',
+		uri: `https://api.10000ft.com/api/v1/users?per_page=1000`,
+		// uri: 'https://vnext-api.10000ft.com/api/v1/users?per_page=1000',
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
-			'auth': `${process.env.VNEXT}`
+			'auth': `${process.env.TENK}`
 		}
 	};
 	return new Promise(
@@ -302,8 +300,8 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	// let uri = 'https://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
-	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	let uri = 'htt÷ps://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	// let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',
@@ -311,7 +309,7 @@ exports.postSubmissions = async(bodies, id) => {
 			headers: {
 				'cache-control': 'no-store',
 				'content-type': 'application/json',
-				'auth': `${process.env.VNEXT}`
+				'auth': `${process.env.TENK}`
 			},
 			body: body,
 			json: true

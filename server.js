@@ -78,7 +78,6 @@ const validateInputDataFormat = (payload) => {
 
 const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 	let pm = JSON.parse(privateMetadata);
-	console.log(pm);
 	let options = {
 		method: 'POST',
 		uri:'https://slack.com/api/chat.update',
@@ -100,8 +99,6 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 		(resolve,reject) => {
 			rp(options)
 				.then(response => {
-					console.log('response');
-					console.log(response);
 					resolve(response);
 				})
 				.catch(err => {
@@ -109,7 +106,7 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 					reject(err);
 				})
 				.finally(function(){
-					console.log('finally deleteConfirmButtonInOriginalMessage()');
+					// console.log('finally deleteConfirmButtonInOriginalMessage()');
 				})
 		}
 	)
@@ -129,7 +126,7 @@ const handleSubmission = async(payload, viewId, res) => {
 		confirmFailure(viewId);
 	})
 	.finally(anything => {
-		console.log('Finally handled submission....');
+		// console.log('Finally handled submission....');
 	})
 }
 
@@ -187,7 +184,7 @@ const confirmSuccess = async(viewId) => {
 					reject(err);
 				})
 				.finally(function(){
-					console.log('Confirmed Success');
+					// console.log('Confirmed Success');
 				})
 		}
 	)
