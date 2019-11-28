@@ -300,7 +300,7 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	let uri = 'htt÷ps://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+	let uri = 'https://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	// let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	await Promise.all(bodies.map(body => 
 		rp({

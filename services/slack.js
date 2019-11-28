@@ -74,6 +74,36 @@ const postMessageWithPayload = async(id, _payload) => {
 			});
 		}
 	}
+	else if (process.env.MODE  === 'pro'){
+		await Slack.chat.postMessage({
+			channel: `${id}`,
+			as_user: true,
+			"blocks": [
+				{
+					"type": "section",
+					"text": {
+						"type": "mrkdwn",
+						"text": "Please confirm your hours on 10000ft"
+					}
+				},
+				{
+					"type": "actions",
+					"block_id": "confirm_button",
+					"elements": [
+						{
+							"type": "button",
+							"text": {
+								"type":"plain_text",
+								"text": "Confirm Now"
+							},
+							"value": `${payload}`,
+							"action_id": "confirm_button_action_id"
+						}
+					]
+				}
+			]
+		});
+	}
 }
 
 exports.findAndMessageUser = (payload) => {

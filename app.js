@@ -21,16 +21,9 @@ function main(){
 			let allWeeklyEntries = r.data;
 			let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 			let messagePayloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
-			// console.log(messagePayloads);
 			return messagePayloads;
 		})
 		.then(async function (payloads){
-			// for (let p of payloads){
-			// 	console.log(p.emailAddress);
-			// 	for (let s of p.suggestions){
-			// 		console.log(s);
-			// 	}
-			// }
 			messageContacts(payloads);
 		})
 
@@ -38,8 +31,7 @@ function main(){
 			console.log('Caught error in app.js main(): ' + err);
 		})
 		.finally(async function(){
-			console.log('Main script is finally over');
-			// messageContacts(messagePayloads);
+			console.log('Main script finally() called');
 		})
 }
 
