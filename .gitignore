@@ -1,5 +1,6 @@
 whitelist.js
 test/data/
+tenK.dev.js
 
 private
 .env
