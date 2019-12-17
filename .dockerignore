@@ -1,5 +1,9 @@
-whitelist.js
+.git
+.cache
+
 test/data/
+whitelist.js
+tenK.dev.js
 
 private
 .env
@@ -7,9 +11,7 @@ private
 .env.*.local
 
 .DS_Store
-node_modules
+
 npm-debug.log*
 
 .vscode
-
-tenK.dev.js
