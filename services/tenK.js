@@ -6,8 +6,6 @@ const slack = require('./slack.js');
 
 let baseUri = 'https://api.10000ft.com/api/v1/';
 let auth = process.env.TENK;
-// let baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-// let auth = process.env.VNEXT;
 
 let requestOptions = {
 	method: 'GET',
@@ -211,7 +209,6 @@ exports.getUserIdFromUserEmail = async(payload) => {
 		method: 'GET',
 		resolveWithFullResponse: true,
 		uri: `https://api.10000ft.com/api/v1/users?per_page=1000`,
-		// uri: 'https://vnext-api.10000ft.com/api/v1/users?per_page=1000',
 		headers: {
 			'cache-control': 'no-store',
 			'content-type': 'application/json',
@@ -301,7 +298,6 @@ exports.constructPostBodies = (payload) => {
 
 exports.postSubmissions = async(bodies, id) => {
 	let uri = 'https://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
-	// let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 	await Promise.all(bodies.map(body => 
 		rp({
 			method: 'POST',

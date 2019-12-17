@@ -6,13 +6,7 @@ const Cron = require('cron').CronJob;
 const tenK = require('./services/tenK.js');
 const slack = require('./services/slack.js');
 
-let interval = '';
-let schedule = false;
-
-if (process.env.MODE === 'pro'){
-	interval = '0 10 * * MON';
-	schedule = true;
-}
+let interval = '0 10 * * MON';
 
 function main(){
 	tenK.getWeeklyEntries()
@@ -48,16 +42,6 @@ const messageContacts = async(payloads) => {
 		});
 }
 
-// For development purposes,
-// just run the script once:
-if (!schedule){
-	main();
-}
-
-// For production purposes,
-// schedule a Cron job:
 new Cron(interval, function() {
-	if (schedule){
 		main();
-	}
 }, null, true, 'Europe/Berlin');
