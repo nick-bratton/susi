@@ -43,5 +43,5 @@ const messageContacts = async(payloads) => {
 }
 
 new Cron(interval, function() {
-		main();
+	main();
 }, null, true, 'Europe/Berlin');
