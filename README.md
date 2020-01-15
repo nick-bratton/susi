@@ -97,6 +97,7 @@ Note that the user will be prevented from submitting incompatable data in the ho
 
 Please cross-reference what you read below with the current [Issues](https://github.com/nick-bratton/susi/issues).
 
+* [Process Management](#process-management)
 * [Handling Pagination](#handling-pagination)
 * [Handling Errors](#handling-errors)
 * [Upgrading Slack Authorization Paradigm](#upgrading-slack-authorization-paradigm)
@@ -108,7 +109,7 @@ Please cross-reference what you read below with the current [Issues](https://git
 
 ## Handling Errors
 
-Care was made to use Promise-based JavaScript where possible. Errors will be caught, but, for the most part just console logged instead of properly handled. `catch` and `finally` blocks should be developed throughout this code base as a starting point.
+Errors should be caught and thrown at this point, but retrying should be implemented. 
 
 ## Upgrading Slack Authorization Paradigm
 
@@ -117,3 +118,7 @@ As mentioned above, token authorization is 'outmoded'. Slack now recommends [usi
 ## Refactoring Calls to Slack API
 
 Calls to the Slack API happen in both `slack.js` and `server.js`. When possible, this functionality should be compartamentalized. Exports should be used to make these calls from the `server.js`.
+
+## Process Management
+
+Forever is currently used but there is no non-default logging and reporting implemented. On first production run, the scripts stopped executing without forever reporting them as stopped. Tests should be written and process management utils like logs/reports should be programmed. 
