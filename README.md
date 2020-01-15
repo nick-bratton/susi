@@ -52,15 +52,8 @@ Cron is used to schedule execution of the `main()` function in `app.js`. The Cro
 
 # Launch
 
-There are three startup scripts, as of the time of this writing. 
+```forever start forever/config.json```
 
-* For development: `npm run dev`
-
-* For beta: `npm run beta`
-
-* For production: `npm run pro`
-
-The only direct consequences of running one of these scripts are [1] setting the value of `process.env.MODE` and [2] starting the runtime. This variable is then used across the scripts to make configurations (e.g., whether sandbox or production environment authorization tokens are used; when the Cron job executes; which URIs are used in HTTP requests; and which, if any, email whitelist should be used).
 
 # Authorization
 

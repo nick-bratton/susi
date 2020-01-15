@@ -9,100 +9,105 @@ Slack = new WebClient(process.env.SLACK_PRO);
 const whitelist = require('../whitelist.js');
 
 const postMessageWithPayload = async(id, _payload) => {
-	let payload = JSON.stringify(_payload);
-	if (process.env.MODE === 'dev') {
-		if (whitelist.devEmail.includes(_payload.emailAddress)){
-			await Slack.chat.postMessage({
-				channel: `${id}`,
-				as_user: true,
-				"blocks": [
-					{
-						"type": "section",
-						"text": {
-							"type": "mrkdwn",
-							"text": "Please confirm your hours on 10000ft"
-						}
-					},
-					{
-						"type": "actions",
-						"block_id": "confirm_button",
-						"elements": [
-							{
-								"type": "button",
-								"text": {
-									"type":"plain_text",
-									"text": "Confirm Now"
-								},
-								"value": `${payload}`,
-								"action_id": "confirm_button_action_id"
-							}
-						]
-					}
-				]
-			});
-		}
-	}
-	else if (process.env.MODE === 'beta'){
-		if (whitelist.emails.includes(_payload.emailAddress)){
-			await Slack.chat.postMessage({
-				channel: `${id}`,
-				as_user: true,
-				"blocks": [
-					{
-						"type": "section",
-						"text": {
-							"type": "mrkdwn",
-							"text": "Please confirm your hours on 10000ft"
-						}
-					},
-					{
-						"type": "actions",
-						"block_id": "confirm_button",
-						"elements": [
-							{
-								"type": "button",
-								"text": {
-									"type":"plain_text",
-									"text": "Confirm Now"
-								},
-								"value": `${payload}`,
-								"action_id": "confirm_button_action_id"
-							}
-						]
-					}
-				]
-			});
-		}
-	}
-	else if (process.env.MODE  === 'pro'){
-		await Slack.chat.postMessage({
-			channel: `${id}`,
-			as_user: true,
-			"blocks": [
-				{
-					"type": "section",
-					"text": {
-						"type": "mrkdwn",
-						"text": "Please confirm your hours on 10000ft"
-					}
-				},
-				{
-					"type": "actions",
-					"block_id": "confirm_button",
-					"elements": [
+	try{
+		let payload = JSON.stringify(_payload);
+		if (process.env.MODE === 'dev') {
+			if (whitelist.devEmail.includes(_payload.emailAddress)){
+				await Slack.chat.postMessage({
+					channel: `${id}`,
+					as_user: true,
+					"blocks": [
 						{
-							"type": "button",
+							"type": "section",
 							"text": {
-								"type":"plain_text",
-								"text": "Confirm Now"
-							},
-							"value": `${payload}`,
-							"action_id": "confirm_button_action_id"
+								"type": "mrkdwn",
+								"text": "Please confirm your hours on 10000ft"
+							}
+						},
+						{
+							"type": "actions",
+							"block_id": "confirm_button",
+							"elements": [
+								{
+									"type": "button",
+									"text": {
+										"type":"plain_text",
+										"text": "Confirm Now"
+									},
+									"value": `${payload}`,
+									"action_id": "confirm_button_action_id"
+								}
+							]
 						}
 					]
-				}
-			]
-		});
+				});
+			}
+		}
+		else if (process.env.MODE === 'beta'){
+			if (whitelist.emails.includes(_payload.emailAddress)){
+				await Slack.chat.postMessage({
+					channel: `${id}`,
+					as_user: true,
+					"blocks": [
+						{
+							"type": "section",
+							"text": {
+								"type": "mrkdwn",
+								"text": "Please confirm your hours on 10000ft"
+							}
+						},
+						{
+							"type": "actions",
+							"block_id": "confirm_button",
+							"elements": [
+								{
+									"type": "button",
+									"text": {
+										"type":"plain_text",
+										"text": "Confirm Now"
+									},
+									"value": `${payload}`,
+									"action_id": "confirm_button_action_id"
+								}
+							]
+						}
+					]
+				});
+			}
+		}
+		else if (process.env.MODE  === 'pro'){
+			await Slack.chat.postMessage({
+				channel: `${id}`,
+				as_user: true,
+				"blocks": [
+					{
+						"type": "section",
+						"text": {
+							"type": "mrkdwn",
+							"text": "Please confirm your hours on 10000ft"
+						}
+					},
+					{
+						"type": "actions",
+						"block_id": "confirm_button",
+						"elements": [
+							{
+								"type": "button",
+								"text": {
+									"type":"plain_text",
+									"text": "Confirm Now"
+								},
+								"value": `${payload}`,
+								"action_id": "confirm_button_action_id"
+							}
+						]
+					}
+				]
+			});
+		}
+	}
+	catch(err){
+		throw err;
 	}
 }
 

@@ -18,34 +18,39 @@ const urlEncodedParser = bodyParser.urlencoded({extended:false});
 app.post('/', urlEncodedParser, async(req, res) => {
 	let payload = JSON.parse(req.body.payload);
 	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined;
-	switch (payload.type){
-		case 'block_actions':
-			if (verified){
-				res.sendStatus(200);
-				await sendMessageToSlackResponseUrl(payload);
-			}
-			else{
-				res.status(403).end("Access forbidden");
-			}
-			break;
-		case 'view_submission':
-			if (verified){
-				let errors = validateInputDataFormat(payload);
-				if (Object.keys(errors).length > 0){
-					let body = {};
-					body.errors = errors;
-					body.response_action = "errors";
-					res.send(body);
+	try {
+		switch (payload.type){
+			case 'block_actions':
+				if (verified){
+					res.sendStatus(200);
+					await sendMessageToSlackResponseUrl(payload);
 				}
-				else {
-					await confirmSubmission(res);
-					handleSubmission(payload, payload.view.id, res);
+				else{
+					res.status(403).end("Access forbidden");
 				}
-			}
-			else{
-				res.status(403).end("Access forbidden");
-			}
-			break;
+				break;
+			case 'view_submission':
+				if (verified){
+					let errors = validateInputDataFormat(payload);
+					if (Object.keys(errors).length > 0){
+						let body = {};
+						body.errors = errors;
+						body.response_action = "errors";
+						res.send(body);
+					}
+					else {
+						await confirmSubmission(res);
+						handleSubmission(payload, payload.view.id, res);
+					}
+				}
+				else{
+					res.status(403).end("Access forbidden");
+				}
+				break;
+		}
+	}
+	catch (err){
+		throw err;
 	}
 })
 

@@ -251,49 +251,54 @@ const constructBodyForPOSTRequest = (payload) => {
 }
 
 exports.constructPostBodies = (payload) => {
-	let postBodies = [];
-	let entryHoursCoupledToBlockId = [];
-	let entryNotesCoupledToBlockId = [];
-	let entryLabelsCoupledToBlockId = [];
-	let decoupledBlockIds = [];
-	for (let [key, value] of Object.entries(payload.view.state.values)) {
-		if (key.includes('hours')){
-			let strippedKey = key.substring(0, key.length - 6);
-			entryHoursCoupledToBlockId.push({
-				block_id: `${strippedKey}`,
-				hours: `${value.plain_input.value}`,
-			});
+	try {
+		let postBodies = [];
+		let entryHoursCoupledToBlockId = [];
+		let entryNotesCoupledToBlockId = [];
+		let entryLabelsCoupledToBlockId = [];
+		let decoupledBlockIds = [];
+		for (let [key, value] of Object.entries(payload.view.state.values)) {
+			if (key.includes('hours')){
+				let strippedKey = key.substring(0, key.length - 6);
+				entryHoursCoupledToBlockId.push({
+					block_id: `${strippedKey}`,
+					hours: `${value.plain_input.value}`,
+				});
+			}
+			else if (key.includes('notes')){
+				let strippedKey = key.substring(0, key.length - 6);
+				entryNotesCoupledToBlockId.push({
+					block_id: `${strippedKey}`,
+					notes: `${value.plain_input.value}`,
+				});
+			}
 		}
-		else if (key.includes('notes')){
-			let strippedKey = key.substring(0, key.length - 6);
-			entryNotesCoupledToBlockId.push({
-				block_id: `${strippedKey}`,
-				notes: `${value.plain_input.value}`,
-			});
+		for (let block of payload.view.blocks){
+			if (block.type == 'section' && block.block_id.includes('.label')){
+				let strippedBlockId = block.block_id.substring(0, block.block_id.length - 6);
+				let label = block.text.text.substring(1, block.text.text.length - 1);
+				entryLabelsCoupledToBlockId.push({
+					block_id: `${strippedBlockId}`,
+					label: `${label}`,
+				});
+			}
 		}
+		entryLabelsCoupledToBlockId.forEach(entry => {
+			decoupledBlockIds.push(entry.block_id);
+		})
+		decoupledBlockIds.forEach(id => {
+			let payload = {};
+			entryLabelsCoupledToBlockId.forEach(label => {if (label.block_id == id){payload.label = label.label;}});
+			entryHoursCoupledToBlockId.forEach(hour => {if (hour.block_id == id){payload.hours = hour.hours;}});
+			entryNotesCoupledToBlockId.forEach(note => {if (note.block_id == id){payload.notes = note.notes;}});
+			let body = constructBodyForPOSTRequest(payload);
+			postBodies.push(body);
+		})
+		return postBodies;
 	}
-	for (let block of payload.view.blocks){
-		if (block.type == 'section' && block.block_id.includes('.label')){
-			let strippedBlockId = block.block_id.substring(0, block.block_id.length - 6);
-			let label = block.text.text.substring(1, block.text.text.length - 1);
-			entryLabelsCoupledToBlockId.push({
-				block_id: `${strippedBlockId}`,
-				label: `${label}`,
-			});
-		}
+	catch (err){
+		throw err;
 	}
-	entryLabelsCoupledToBlockId.forEach(entry => {
-		decoupledBlockIds.push(entry.block_id);
-	})
-	decoupledBlockIds.forEach(id => {
-		let payload = {};
-		entryLabelsCoupledToBlockId.forEach(label => {if (label.block_id == id){payload.label = label.label;}});
-		entryHoursCoupledToBlockId.forEach(hour => {if (hour.block_id == id){payload.hours = hour.hours;}});
-		entryNotesCoupledToBlockId.forEach(note => {if (note.block_id == id){payload.notes = note.notes;}});
-		let body = constructBodyForPOSTRequest(payload);
-		postBodies.push(body);
-	})
-	return postBodies;
 }
 
 exports.postSubmissions = async(bodies, id) => {
@@ -311,6 +316,9 @@ exports.postSubmissions = async(bodies, id) => {
 			json: true
 		}))
 	)
+	.catch(err => {
+		throw err;
+	})
 }
 
 exports.getAssignableNameFromAssignableId = async(assignableId) => {
