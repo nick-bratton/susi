@@ -4,7 +4,7 @@ Susi is a middleware (so-to-say) for [Slack](https://slack.com) and [10000ft](ht
   * directly message employees when they have unconfirmed time entries
   * provide an interactive modal through which they can view their suggested time entries and confirm them, or alter them and then confirm them, all without ever having to leave Slack.
 
-The structure of this repository is simply one main script (`app.js`), one internal API (`server.js`), and two service scripts in the *services* directory for interacting with the Slack and 10000ft APIs (respectively, `slack.js` and `tenK.js`). 
+The structure of this repository is one main script (`app.js`), one internal API (`server.js`), a few service scripts in the *services* directory for interacting with the Slack and 10000ft APIs (respectively, `slack.js` and `tenK.js`) and for tunneling HTTP requests (`ngrok.js`) from Slack to our API. In addition, the *forever* directory contains a config file for the Node process manager [forever](https://www.npmjs.com/package/forever). 
 
 # Table of Contents
 
@@ -28,9 +28,10 @@ to install:
 * [cron](https://www.npmjs.com/package/cron)
 * [dotenv](https://www.npmjs.com/package/dotenv)
 * [express](https://www.npmjs.com/package/express)
+* [ngrok](https://ngrok.com/)
 * [request-promise](https://www.npmjs.com/package/request-promise)
 
-Feel free to use the Yarn package manager at your own risk. There is room for improvement in terms of limiting the amount of dependencies. 
+Feel free to use the Yarn package manager at your own risk. There is room for improvement in terms of limiting dependencies. 
 
 # Configuration
 
@@ -49,6 +50,10 @@ The `whitelist.js` exports an array of email addresses that will be used to defi
 ## cron (app.js)
 
 Cron is used to schedule execution of the `main()` function in `app.js`. The Cron job runs on Berlin time by default.
+
+## forever/config.json
+
+This file contains configuration for the Node process manager forever.
 
 # Launch
 
