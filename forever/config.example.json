@@ -4,23 +4,21 @@
 		"append": true,
 		"watch": true,
 		"script": "services/ngrok.js",
-		"sourceDir": ".",
-		"logFile": "./logs/tunnel.log"
+    "sourceDir": ".",
+    "workingDir": ".."
 	},
 	{
 		"uid": "server",
 		"append": true,
 		"watch": true,
 		"script": "server.js",
-		"sourceDir": ".",
-		"logFile": "./logs/server.log"
+		"sourceDir": "."
 	},
 	{
 		"uid": "app",
 		"append": true,
 		"watch": true,
 		"script": "app.js",
-		"sourceDir": ".",
-		"logFile": "./logs/app.log"
+		"sourceDir": "."
 	}
 ]
