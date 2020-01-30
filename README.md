@@ -53,12 +53,17 @@ Cron is used to schedule execution of the `main()` function in `app.js`. The Cro
 
 ## forever/config.json
 
-This file contains configuration for the Node process manager forever.
+This file contains configuration for the Node process manager forever. You need to change the name of this file from `config.example.json` to `config.json` after cloning.
 
 # Launch
 
 ```forever start forever/config.json```
 
+If desired, [forever-log-reporter](https://github.com/nick-bratton/forever-log-reporter) can also be installed to report and store logfiles generated according to the configuration in `forever/config.json`. If you have done so, you can use a single command to launch and watch the scripts in this codebase and the log-reporter itself, for example with: 
+
+```forever start /susi/forever/config.json && forever start /forever-log-reporter/forever/config.json```
+
+Just configure the logfiles for this repository to be output to whatever directory is scanned by the *forever-log-reporter*.
 
 # Authorization
 
@@ -97,7 +102,6 @@ Note that the user will be prevented from submitting incompatable data in the ho
 
 Please cross-reference what you read below with the current [Issues](https://github.com/nick-bratton/susi/issues).
 
-* [Process Management](#process-management)
 * [Handling Pagination](#handling-pagination)
 * [Handling Errors](#handling-errors)
 * [Upgrading Slack Authorization Paradigm](#upgrading-slack-authorization-paradigm)
@@ -118,7 +122,3 @@ As mentioned above, token authorization is 'outmoded'. Slack now recommends [usi
 ## Refactoring Calls to Slack API
 
 Calls to the Slack API happen in both `slack.js` and `server.js`. When possible, this functionality should be compartamentalized. Exports should be used to make these calls from the `server.js`.
-
-## Process Management
-
-Forever is currently used but there is no non-default logging and reporting implemented. On first production run, the scripts stopped executing without forever reporting them as stopped. Tests should be written and process management utils like logs/reports should be programmed. 
