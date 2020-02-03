@@ -65,20 +65,9 @@ const getActiveIds = (weeklyEntries) => {
 }
 
 const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
-	let weeklySuggestions = [];
-	let weeklyConfirmations = [];
-	let suggestionsAndConfirmations = {};
-	for (let e in weeklyEntries){
-		if (weeklyEntries[e].is_suggestion === true){
-			weeklySuggestions.push(weeklyEntries[e]);
-		}
-		else {
-			weeklyConfirmations.push(weeklyEntries[e]);
-		}
-	}
-	suggestionsAndConfirmations.suggestions = weeklySuggestions;
-	suggestionsAndConfirmations.confirmations = weeklyConfirmations;
-	return suggestionsAndConfirmations;
+	let weeklySuggestions = weeklyEntries.filter(entry => entry.is_suggestion === true);
+	let weeklyConfirmations = weeklyEntries.filter(entry => entry.is_suggestion === false);
+	return { suggestions: weeklySuggestions, confirmations: weeklyConfirmations }
 }
 
 const getWeekdayFromYYYYMMDD = (yyyymmdd) => {
@@ -147,8 +136,13 @@ const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
 }
 
 exports.getWeeklyEntries = () => {
-	requestOptions.uri = uriToCheckWeeklyTimeEntries();
-	return rp(requestOptions)
+	try{ 
+		requestOptions.uri = uriToCheckWeeklyTimeEntries();
+		return rp(requestOptions)
+	}
+	catch(err) {
+		throw err;
+	}
 }
 
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
@@ -197,7 +191,6 @@ exports.getUserIdFromUserEmail = async(payload) => {
 	let options = {
 		method: 'GET',
 		resolveWithFullResponse: true,
-		// uri: `https://api.10000ft.com/api/v1/users?per_page=1000`,
 		uri: 'https://vnext-api.10000ft.com/api/v1/users?per_page=1000',
 		headers: {
 			'cache-control': 'no-store',
