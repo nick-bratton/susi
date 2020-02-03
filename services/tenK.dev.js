@@ -146,44 +146,46 @@ exports.getWeeklyEntries = () => {
 }
 
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
-	let activeIds = getActiveIds(allWeeklyEntries);
-	let payloads = [];
-	for (let id of activeIds){
-		let suggestedTimeEntriesWithThisUserId = [];
-		for (let entryIdentifier of unconfirmedEntryIdentifiers){
-			if (entryIdentifier.user_id == id){
-				suggestedTimeEntriesWithThisUserId.push(entryIdentifier);
+	try{
+		let activeIds = getActiveIds(allWeeklyEntries);
+		let payloads = [];
+		for (let id of activeIds){
+			let suggestedTimeEntriesWithThisUserId = unconfirmedEntryIdentifiers.filter(identifier => identifier.user_id === id);
+			if(suggestedTimeEntriesWithThisUserId.length > 0){
+				let emailAddress = await getUserEmailFrom10KUserID(id);
+				for (let suggestion of suggestedTimeEntriesWithThisUserId){
+					suggestion.date = makeDateReadable(suggestion.date);
+					suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	
+				}
+				if (emailAddress !== '' && emailAddress !== null && emailAddress !== undefined && ( emailAddress.includes('@ixds.com') || emailAddress.includes('@ixds.de'))){
+					payloads.push({'emailAddress': emailAddress, 'suggestions': suggestedTimeEntriesWithThisUserId})
+				}
 			}
 		}
-		if(suggestedTimeEntriesWithThisUserId.length > 0){
-			let emailAddress = await getUserEmailFrom10KUserID(id);
-			for (let suggestion of suggestedTimeEntriesWithThisUserId){
-				suggestion.date = makeDateReadable(suggestion.date);
-				suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	
-			}
-			if (emailAddress != '' && emailAddress != null && emailAddress != undefined && ( emailAddress.includes('@ixds.com') || emailAddress.includes('@ixds.de'))){
-				payloads.push({
-					'emailAddress': emailAddress,
-					'suggestions': suggestedTimeEntriesWithThisUserId
-				})
-			}
-		}
+		return payloads;
 	}
-	return payloads;
+	catch(err){
+		throw err;
+	}
 }
 
 exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
-	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
-	const hasConfirmedEntry = (suggestion) => {
-		for (let confirmation of suggestionsAndConfirmations.confirmations){
-			if (suggestion.assignable_id == confirmation.assignable_id && suggestion.date == confirmation.date && suggestion.user_id == confirmation.user_id){
-				return false;
+	try{
+		let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
+		const hasConfirmedEntry = (suggestion) => {
+			for (let confirmation of suggestionsAndConfirmations.confirmations){
+				if (suggestion.assignable_id == confirmation.assignable_id && suggestion.date == confirmation.date && suggestion.user_id == confirmation.user_id){
+					return false;
+				}
 			}
+			return true;
 		}
-		return true;
+		let unconfirmedEntryIdentifiers = suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry);
+		return unconfirmedEntryIdentifiers;
 	}
-	let unconfirmedEntryIdentifiers = suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry);
-	return unconfirmedEntryIdentifiers;
+	catch(err){
+		throw err;
+	}
 }
 
 exports.getUserIdFromUserEmail = async(payload) => {
