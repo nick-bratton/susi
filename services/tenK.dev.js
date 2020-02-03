@@ -169,7 +169,7 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 	}
 }
 
-exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
+exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 	try{
 		let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 		const hasConfirmedEntry = (suggestion) => {
@@ -180,8 +180,7 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 			}
 			return true;
 		}
-		let unconfirmedEntryIdentifiers = suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry);
-		return unconfirmedEntryIdentifiers;
+		return suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry)
 	}
 	catch(err){
 		throw err;
@@ -189,36 +188,41 @@ exports.getUnconfirmedEntryIdentifiers = async(weeklyEntries) => {
 }
 
 exports.getUserIdFromUserEmail = async(payload) => {
-	let userEmail = await slack.getUserEmailAddressFromUserId(payload.user.id);
-	let options = {
-		method: 'GET',
-		resolveWithFullResponse: true,
-		uri: 'https://vnext-api.10000ft.com/api/v1/users?per_page=1000',
-		headers: {
-			'cache-control': 'no-store',
-			'content-type': 'application/json',
-			'auth': `${process.env.VNEXT}`
-		}
-	};
-	return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-					let body = JSON.parse(response.body);
-					for (let user of body.data){
-						if (user.email == userEmail){
-							resolve(user.id);
+	try{
+		let userEmail = await slack.getUserEmailAddressFromUserId(payload.user.id);
+		let options = {
+			method: 'GET',
+			resolveWithFullResponse: true,
+			uri: 'https://vnext-api.10000ft.com/api/v1/users?per_page=1000',
+			headers: {
+				'cache-control': 'no-store',
+				'content-type': 'application/json',
+				'auth': `${process.env.VNEXT}`
+			}
+		};
+		return new Promise(
+			(resolve,reject) => {
+				rp(options)
+					.then(response => {
+						let body = JSON.parse(response.body);
+						for (let user of body.data){
+							if (user.email == userEmail){
+								resolve(user.id);
+							}
 						}
-					}
-				})
-				.catch(err => {
-					console.log('Error in getUserIdFromUserEmail(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-				})
-		}
-	)
+					})
+					.catch(err => {
+						console.log('Error in getUserIdFromUserEmail(): ' + err)
+						reject(err);
+					})
+					.finally(function(){
+					})
+			}
+		)
+	}
+	catch(err) {
+		throw err;
+	}
 }
 
 const constructBodyForPOSTRequest = (payload) => {
