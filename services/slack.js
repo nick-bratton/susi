@@ -58,11 +58,11 @@ const postMessageWithPayload = async(id, _payload) => {
 	}
 }
 
-exports.findAndMessageUser = async(payload) => {
+exports.messageUserAndReturnPayload = async(payload) => {
 	try{
 		let user = await Slack.users.lookupByEmail({email: `${payload.emailAddress}`});
 		await postMessageWithPayload(user.user.id, payload);
-		return user.user.id;
+		return {user: user.user, payload: payload}
 	}
 	catch(err){
 		throw err;

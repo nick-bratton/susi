@@ -4,7 +4,7 @@
   "description": "Node script to schedule Slack bot notifications weekly about unconfirmed hours in 10K",
   "main": "app.js",
   "scripts": {
-    "dev": "MODE=dev node app.js",
+    "dev": "MODE=dev node --trace-warnings app.js",
     "pro": "MODE=pro node app.js",
     "beta": "MODE=beta node app.js"
   },

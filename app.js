@@ -4,6 +4,7 @@ require('dotenv').config()
 
 const Cron = require('cron').CronJob;
 // const tenK = require('./services/tenK.js');
+const mongo = require('./services/mongo.js')
 const tenK = require('./services/tenK.dev.js');
 
 const slack = require('./services/slack.js');
@@ -15,7 +16,10 @@ const main = async() => {
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
-		await Promise.all(payloads.map(payload => slack.findAndMessageUser(payload)))
+		await Promise.all(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
+			.then(usersAndPayloads => {
+				mongo.store(usersAndPayloads)
+			})
 	}
 	catch(err){
 		throw err;
