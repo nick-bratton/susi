@@ -214,10 +214,7 @@ exports.getUserIdFromUserEmail = async(payload) => {
 }
 
 const constructBodyForPOSTRequest = (payload) => {
-	let body = {
-		'hours': `${payload.hours}`,
-		'notes': `${payload.notes}`
-	};
+	let body = { 'hours': `${payload.hours}`, 'notes': `${payload.notes}` };
 	let subLabels = payload.label.split(' ');
 	body.date = constructYYYYMMDDFromReadableDate(subLabels.slice(0,4));
 	let assignable_id = subLabels.splice(subLabels.length-1)[0];
@@ -274,48 +271,45 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	// let uri = 'https://api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
-	let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
-	await Promise.all(bodies.map(body => 
-		rp({
-			method: 'POST',
+	try{
+		let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
+		await Promise.all(bodies.map(body => 
+			rp({
+				method: 'POST',
+				uri: `${uri}`,
+				headers: {
+					'cache-control': 'no-store',
+					'content-type': 'application/json',
+					'auth': `${process.env.VNEXT}`
+				},
+				body: body,
+				json: true
+			}))
+		)
+	}
+	catch(err){
+		throw err;
+	}
+}
+
+exports.getAssignableNameFromAssignableId = async(assignableId) => {
+	try{
+		let uri = `${baseUri}` + 'assignables/' + assignableId;
+		let options = {
+			method: 'GET',
+			resolveWithFullResponse: true,
 			uri: `${uri}`,
 			headers: {
 				'cache-control': 'no-store',
 				'content-type': 'application/json',
-				'auth': `${process.env.VNEXT}`
-			},
-			body: body,
-			json: true
-		}))
-	)
-}
-
-exports.getAssignableNameFromAssignableId = async(assignableId) => {
-	let uri = `${baseUri}` + 'assignables/' + assignableId;
-	let options = {
-		method: 'GET',
-		resolveWithFullResponse: true,
-		uri: `${uri}`,
-		headers: {
-			'cache-control': 'no-store',
-			'content-type': 'application/json',
-			'auth': `${auth}`
-		}
-	};
-	return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-					let body = JSON.parse(response.body);
-					resolve(body.name);
-				})
-				.catch(err => {
-					console.log('Error caught in Promise returned from getProjectNameFromAssignableId(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-				})
-		}
-	)
+				'auth': `${auth}`
+			}
+		};
+		let res = await rp(options);
+		let body = JSON.parse(res.body);
+		return body.name;
+	}
+	catch(err){
+		throw err;
+	}
 }
