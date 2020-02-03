@@ -200,25 +200,13 @@ exports.getUserIdFromUserEmail = async(payload) => {
 				'auth': `${process.env.VNEXT}`
 			}
 		};
-		return new Promise(
-			(resolve,reject) => {
-				rp(options)
-					.then(response => {
-						let body = JSON.parse(response.body);
-						for (let user of body.data){
-							if (user.email == userEmail){
-								resolve(user.id);
-							}
-						}
-					})
-					.catch(err => {
-						console.log('Error in getUserIdFromUserEmail(): ' + err)
-						reject(err);
-					})
-					.finally(function(){
-					})
+		let res = await rp(options);
+		let body = JSON.parse(res.body);
+		for(let user of body.data){
+			if (user.email === userEmail){
+				return user.id
 			}
-		)
+		}
 	}
 	catch(err) {
 		throw err;
