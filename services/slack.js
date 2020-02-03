@@ -125,16 +125,12 @@ exports.findAndMessageUser = (payload) => {
 	})
 }
 
-exports.getUserEmailAddressFromUserId = (userId) => {
-	return new Promise(async function(resolve,reject){
-		await Slack.users.info({
-			user: `${userId}`
-		}).then(response => {
-			resolve(response.user.profile.email);
-		})
-		.catch(err => {
-			console.log('Error in getUser << ' + userId + ' >> EmailAddressFromUserId(): ' + err);
-			reject(err);
-		})
-	})
+exports.getUserEmailAddressFromUserId = async(userId) => {
+	try{
+		let userInfo = await Slack.users.info({user: `${userId}`})
+		return userInfo.user.profile.email;
+	}
+	catch(err){
+		throw err;
+	}
 }

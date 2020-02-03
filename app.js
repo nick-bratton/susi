@@ -3,12 +3,14 @@
 require('dotenv').config()
 
 const Cron = require('cron').CronJob;
-const tenK = require('./services/tenK.js');
+// const tenK = require('./services/tenK.js');
+const tenK = require('./services/tenK.dev.js');
+
 const slack = require('./services/slack.js');
 
 let interval = '0 10 * * MON';
 
-function main(){
+const main = async() => {
 	try{
 		tenK.getWeeklyEntries()
 			.then(async function (response) {
@@ -47,6 +49,11 @@ const messageContacts = async(payloads) => {
 		});
 }
 
-new Cron(interval, function() {
-	main();
-}, null, true, 'Europe/Berlin');
+// new Cron(interval, function() {
+// 	main();
+// }, null, true, 'Europe/Berlin');
+
+main()
+	.catch(err => {
+		throw err;
+	})
