@@ -135,10 +135,12 @@ const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
 	return yyyymmdd;
 }
 
-exports.getWeeklyEntries = () => {
+exports.getWeeklyEntries = async() => {
 	try{ 
 		requestOptions.uri = uriToCheckWeeklyTimeEntries();
-		return rp(requestOptions)
+		let res = await rp(requestOptions);
+		let body = JSON.parse(res.body);
+		return body.data
 	}
 	catch(err) {
 		throw err;
