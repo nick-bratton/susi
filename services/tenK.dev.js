@@ -4,8 +4,6 @@ require('dotenv').config()
 const rp = require('request-promise');
 const slack = require('./slack.js');
 
-// let baseUri = 'https://api.10000ft.com/api/v1/';
-// let auth = process.env.TENK;
 let baseUri = 'https://vnext-api.10000ft.com/api/v1/';
 let auth = process.env.VNEXT;
 
@@ -61,13 +59,9 @@ const getUserEmailFrom10KUserID = async(id) => {
 }
 
 const getActiveIds = (weeklyEntries) => {
-	let unfilteredIds = [];
-	for (let e of weeklyEntries){
-		unfilteredIds.push(e.user_id);
-	}
+	let unfilteredIds = weeklyEntries.map(entry => entry.user_id);
 	let filteredIds = new Set(unfilteredIds);
-	let activeIds = Array.from(filteredIds);
-	return activeIds;
+	return Array.from(filteredIds);
 }
 
 const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
