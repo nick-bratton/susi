@@ -297,7 +297,7 @@ exports.constructPostBodies = (payload) => {
 		return postBodies;
 	}
 	catch (err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -317,7 +317,7 @@ exports.postSubmissions = async(bodies, id) => {
 		}))
 	)
 	.catch(err => {
-		throw err;
+		throw new Error(err);
 	})
 }
 

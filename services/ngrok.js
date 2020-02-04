@@ -29,7 +29,7 @@ const runTunnel = async() => {
 		})
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 

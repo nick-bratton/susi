@@ -54,7 +54,7 @@ const postMessageWithPayload = async(id, _payload) => {
 		}
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -74,7 +74,7 @@ exports.messageUserAndReturnPayload = async(payload) => {
 		}
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -84,6 +84,6 @@ exports.getUserEmailAddressFromUserId = async(userId) => {
 		return userInfo.user.profile.email;
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }

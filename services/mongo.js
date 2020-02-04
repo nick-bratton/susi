@@ -9,7 +9,7 @@ getClient = async() => {
 		return await client.connect();
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -18,7 +18,7 @@ getSession = async(client) => {
 		return await client.startSession();
 	}
 	catch(err){
-		throw (err);
+		throw new Error(err);
 	}
 }
 
@@ -32,6 +32,6 @@ exports.insert = async(doc) => {
 		})
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }

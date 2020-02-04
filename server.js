@@ -50,7 +50,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 		}
 	}
 	catch (err){
-		throw err;
+		throw new Error(err);
 	}
 })
 

@@ -54,7 +54,7 @@ const getUserEmailFrom10KUserID = async(id) => {
 		return user.email
 	}
 	catch(err) {
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -143,7 +143,7 @@ exports.getWeeklyEntries = async() => {
 		return body.data
 	}
 	catch(err) {
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -167,7 +167,7 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 		return payloads;
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -185,7 +185,7 @@ exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 		return suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry)
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -211,7 +211,7 @@ exports.getUserIdFromUserEmail = async(payload) => {
 		}
 	}
 	catch(err) {
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -273,7 +273,6 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
-	console.log(bodies, id);
 	try{
 		let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 		await Promise.all(bodies.map(body => 
@@ -291,7 +290,7 @@ exports.postSubmissions = async(bodies, id) => {
 		)
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
 
@@ -313,6 +312,6 @@ exports.getAssignableNameFromAssignableId = async(assignableId) => {
 		return body.name;
 	}
 	catch(err){
-		throw err;
+		throw new Error(err);
 	}
 }
