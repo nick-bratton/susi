@@ -75,39 +75,31 @@ const validateInputDataFormat = (payload) => {
 }
 
 const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
-	let pm = JSON.parse(privateMetadata);
-	let options = {
-		method: 'POST',
-		uri:'https://slack.com/api/chat.update',
-		headers: {
-			'content-type': 'application/json; utf-8',
-			'authorization': `Bearer ${slackAuth}`,
-		},
-		json: true,
-		as_user: true,
-		body: {
-			"channel": `${pm.channel_id}`,
-			"ts": `${pm.ts}`,
-			"text": 'Thanks for using the 10K Reminder!',
-			"attachments": [],
-			"blocks": []
+	try{
+		let pm = JSON.parse(privateMetadata);
+		let options = {
+			method: 'POST',
+			uri:'https://slack.com/api/chat.update',
+			headers: {
+				'content-type': 'application/json; utf-8',
+				'authorization': `Bearer ${slackAuth}`,
+			},
+			json: true,
+			as_user: true,
+			body: {
+				"channel": `${pm.channel_id}`,
+				"ts": `${pm.ts}`,
+				"text": 'Thanks for using the 10K Reminder!',
+				"attachments": [],
+				"blocks": []
+			}
 		}
+		let res = await rp(options);
+		return res
 	}
-	return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-					resolve(response);
-				})
-				.catch(err => {
-					console.log('Error in deleteConfirmButtonInOriginalMessage(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-					// console.log('finally deleteConfirmButtonInOriginalMessage()');
-				})
-		}
-	)
+	catch(err){
+		throw new Error(err)
+	}
 }
 
 const handleSubmission = async(payload, viewId, res) => {
