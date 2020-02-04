@@ -66,11 +66,9 @@ const inputIsValid = (value) => {
 const validateInputDataFormat = (payload) => {
 	let errors = {};
 	for (let [key, value] of Object.entries(payload.view.state.values)) {
-		let form_id = key;
-		let input = value.plain_input.value;
-		let valid = inputIsValid(input) || key.includes('.notes');
+		let valid = inputIsValid(value.plain_input.value) || key.includes('.notes');
 		if (!valid){
-			errors[form_id] = 'Input must be a number betewen 0 and 24 (e.g., 8, 0, 2.5).';
+			errors[key] = 'Input must be a number betewen 0 and 24 (e.g., 8, 0, 2.5).';
 		}
 	}
 	return errors;
