@@ -408,19 +408,10 @@ const constructInputBlocksFromPayload = async (payload) => {
 }
 
 const getUserNameFromUserIdFromParsedPayload = async(payload) => {
-	return new Promise(async function(resolve,reject){
-		await Slack.users.info({
-			user: `${payload.user.id}`
-		}).then(user => {
-			let userName = user.user.profile.real_name;
-			let bothNames = userName.split(' ');
-			let firstName = bothNames[0];
-			resolve(firstName);
-		})
-		.catch(err => {
-			console.log('Error in getUserNameFromUserIdFromParsedPayload(): ' + err);
-		})
-	})
+	let user = await Slack.users.info({user: `${payload.user.id}`});
+	user = user.user.profile.real_name;
+	user = user.split(' ');
+	return user[0]
 }
 
 String.prototype.hashCode = function() {
