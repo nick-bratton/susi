@@ -4,7 +4,7 @@ require('dotenv').config()
 const express = require('express');
 const bodyParser = require('body-parser');
 const rp = require('request-promise');
-const tenK = require('./services/tenK.js');
+const tenK = require('./services/tenK.dev.js');
 const app = express();
 const port = process.env.PORT;
 const slackAuth = process.env.SLACK_PRO;
@@ -118,6 +118,7 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 }
 
 const handleSubmission = async(payload, viewId, res) => {
+	console.log('handling')
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
 	await tenK.postSubmissions(reqBodies, id)
@@ -128,7 +129,7 @@ const handleSubmission = async(payload, viewId, res) => {
 	})
 	.catch(err => {
 		console.log('Caught err in tenK.postSubmissions(): ' + err);
-		confirmFailure(viewId);
+		// confirmFailure(viewId);
 	})
 	.finally(anything => {
 		// console.log('Finally handled submission....');

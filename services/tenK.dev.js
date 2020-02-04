@@ -273,6 +273,7 @@ exports.constructPostBodies = (payload) => {
 }
 
 exports.postSubmissions = async(bodies, id) => {
+	console.log(bodies, id);
 	try{
 		let uri = 'https://vnext-api.10000ft.com/api/v1/' + 'users/' + id + '/time_entries';
 		await Promise.all(bodies.map(body => 

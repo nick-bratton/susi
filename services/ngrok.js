@@ -16,6 +16,16 @@ const runTunnel = async() => {
 					runTunnel();
 				}
 			}
+		}, {
+			authtoken: process.env.NGROK,
+			proto: 'http',
+			addr: process.env.PORT_SANDBOX,
+			subdomain: process.env.SUBDOMAIN_SANDBOX,
+			onStatusChange: status => {
+				if(status == 'closed'){
+					runTunnel();
+				}
+			}
 		})
 	}
 	catch(err){
