@@ -248,64 +248,54 @@ const confirmSubmission = async(res) => {
 }
 
 const sendMessageToSlackResponseUrl = async(requestPayload) => {
-
-	let privateMetadata = {
-		token: requestPayload.token,
-		ts: requestPayload.container.message_ts,
-		channel_id: requestPayload.container.channel_id,
-		blocks: requestPayload.message.blocks,
-	}
-
-	let pm = JSON.stringify(privateMetadata);
-
-	let options = {
-		method: 'POST',
-		uri:'https://slack.com/api/views.open',
-		headers: {
-			'content-type': 'application/json',
-			'authorization': `Bearer ${slackAuth}`
-		},
-		json: true,
-		body: {
-			"trigger_id": requestPayload.trigger_id,
-			"replace_original": false,
-			"view": {
-				"type": "modal",
-				"callback_id": "modal-with-input",
-				"private_metadata": pm,
-				"title": {
-					"type": "plain_text",
-					"text": "10K Reminder",
-					"emoji": true
-				},
-				"submit": {
-					"type": "plain_text",
-					"text": "Submit",
-					"emoji": true
-				},
-				"close": {
-					"type": "plain_text",
-					"text": "Cancel",
-					"emoji": true
-				},
+	try{
+		let privateMetadata = {
+			token: requestPayload.token,
+			ts: requestPayload.container.message_ts,
+			channel_id: requestPayload.container.channel_id,
+			blocks: requestPayload.message.blocks,
+		}
+		let pm = JSON.stringify(privateMetadata);
+		let options = {
+			method: 'POST',
+			uri:'https://slack.com/api/views.open',
+			headers: {
+				'content-type': 'application/json',
+				'authorization': `Bearer ${slackAuth}`
 			},
+			json: true,
+			body: {
+				"trigger_id": requestPayload.trigger_id,
+				"replace_original": false,
+				"view": {
+					"type": "modal",
+					"callback_id": "modal-with-input",
+					"private_metadata": pm,
+					"title": {
+						"type": "plain_text",
+						"text": "10K Reminder",
+						"emoji": true
+					},
+					"submit": {
+						"type": "plain_text",
+						"text": "Submit",
+						"emoji": true
+					},
+					"close": {
+						"type": "plain_text",
+						"text": "Cancel",
+						"emoji": true
+					},
+				},
+			}
 		}
+		options.body.view.blocks = await constructInputBlocksFromPayload(requestPayload);
+		let res = await rp(options);
+		return res;
 	}
-	options.body.view.blocks = await constructInputBlocksFromPayload(requestPayload);
-	return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-					resolve(response);
-				})
-				.catch(err => {
-					console.log('Error in sendMessageToSlackResponseUrl(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-				})
-		}
-	)
+	catch(err){
+		throw new Error(err);
+	}
 }
 
 let createGreetingBlock = (userName) => {
