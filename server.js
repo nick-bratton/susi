@@ -116,124 +116,109 @@ const handleSubmission = async(payload, viewId) => {
 }
 
 const confirmSuccess = async(viewId) => {
-	let options = {
-		method: 'POST',
-		uri:'https://slack.com/api/views.update',
-		headers: {
-			'content-type': 'application/json',
-			'authorization': `Bearer ${slackAuth}`
-		},
-		json: true,
-		body: {
-			"view_id": `${viewId}`,
-			"view": {
-				"type": "modal",
-				"callback_id": "modal-with-input",
-				"title": {
-					"type": "plain_text",
-					"text": "Success!",
-					"emoji": true
-				},
-				"close": {
-					"type": "plain_text",
-					"text": "Finish",
-					"emoji": true
-				},
-				"blocks": [
-					{
-						"type": "section",
-						"text": {
-							"type": "plain_text",
-							"text": "Your hours were successfully submitted to 10000ft"
-						}
+	try{
+		let options = {
+			method: 'POST',
+			uri:'https://slack.com/api/views.update',
+			headers: {
+				'content-type': 'application/json',
+				'authorization': `Bearer ${slackAuth}`
+			},
+			json: true,
+			body: {
+				"view_id": `${viewId}`,
+				"view": {
+					"type": "modal",
+					"callback_id": "modal-with-input",
+					"title": {
+						"type": "plain_text",
+						"text": "Success!",
+						"emoji": true
 					},
-					{
-						"type": "section",
-						"text": {
-							"type": "plain_text",
-							"text": "Nice work :v:"
-						}
+					"close": {
+						"type": "plain_text",
+						"text": "Finish",
+						"emoji": true
 					},
-				]
+					"blocks": [
+						{
+							"type": "section",
+							"text": {
+								"type": "plain_text",
+								"text": "Your hours were successfully submitted to 10000ft"
+							}
+						},
+						{
+							"type": "section",
+							"text": {
+								"type": "plain_text",
+								"text": "Nice work :v:"
+							}
+						},
+					]
+				}
 			}
 		}
+		let res = await rp(options);
+		return res;
 	}
-	return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-					resolve(response);
-				})
-				.catch(err => {
-					console.log('Error in confirmSuccess(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-					// console.log('Confirmed Success');
-				})
-		}
-	)
+	catch(err){
+		throw new Error(err);
+	}
 }
 
 const confirmFailure = async(viewId) => {
-	let options = {
-		method: 'POST',
-		uri:'https://slack.com/api/views.update',
-		headers: {
-			'content-type': 'application/json',
-			'authorization': `Bearer ${slackAuth}`
-		},
-		json: true,
-		body: {
-			"view_id": `${viewId}`,
-			"view": {
-				"type": "modal",
-				"callback_id": "modal-with-input",
-				"title": {
-					"type": "plain_text",
-					"text": "Oh no!"
-				},
-				"close": {
-					"type": "plain_text",
-					"text": "Cancel",
-				},
-				"blocks": [
-					{
-						"type": "section",
-						"text": {
-							"type": "mrkdwn",
-							"text": ":face_with_head_bandage: Something seems to have gone wrong."
-						}
+	try{
+		let options = {
+			method: 'POST',
+			uri:'https://slack.com/api/views.update',
+			headers: {
+				'content-type': 'application/json',
+				'authorization': `Bearer ${slackAuth}`
+			},
+			json: true,
+			body: {
+				"view_id": `${viewId}`,
+				"view": {
+					"type": "modal",
+					"callback_id": "modal-with-input",
+					"title": {
+						"type": "plain_text",
+						"text": "Oh no!"
 					},
-					{
-						"type": "section",
-						"text": {
-							"type": "mrkdwn",
-							"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
-						}
+					"close": {
+						"type": "plain_text",
+						"text": "Cancel",
 					},
-				]
+					"blocks": [
+						{
+							"type": "section",
+							"text": {
+								"type": "mrkdwn",
+								"text": ":face_with_head_bandage: Something seems to have gone wrong."
+							}
+						},
+						{
+							"type": "section",
+							"text": {
+								"type": "mrkdwn",
+								"text": "*<https://app.10000ft.com/me/tracker|Go to 10000ft.>*"
+							}
+						},
+					]
+				}
 			}
 		}
+		let res = await rp(options);
+		return res;
 	}
-	return new Promise(
-		(resolve,reject) => {
-			rp(options)
-				.then(response => {
-					resolve(response);
-				})
-				.catch(err => {
-					console.log('Error in confirmFailure(): ' + err)
-					reject(err);
-				})
-				.finally(function(){
-				})
-		}
-	)
+	catch(err){
+		throw new Error(err);
+	}
 }
 
 const confirmSubmission = async(res) => {
-	res.send({
+	await res.send({
 		"response_action": "update",
 		"view": {
 			"type": "modal",
