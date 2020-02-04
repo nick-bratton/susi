@@ -57,15 +57,10 @@ app.post('/', urlEncodedParser, async(req, res) => {
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
 const inputIsValid = (value) => {
-	let valid;
-	if (value != null && value != undefined && value < 24 && value >= 0) {
-		valid = true;
+	if (value !== null && value !== undefined && value < 24 && value >= 0) {
+		return true;
 	}
-	else {
-		valid = false;
-	}
-
-	return valid;
+	return false;
 }
 
 const validateInputDataFormat = (payload) => {
@@ -118,7 +113,6 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 }
 
 const handleSubmission = async(payload, viewId, res) => {
-	console.log('handling')
 	let reqBodies = tenK.constructPostBodies(payload);
 	let id = await tenK.getUserIdFromUserEmail(payload);
 	await tenK.postSubmissions(reqBodies, id)
@@ -128,8 +122,7 @@ const handleSubmission = async(payload, viewId, res) => {
 		})
 	})
 	.catch(err => {
-		console.log('Caught err in tenK.postSubmissions(): ' + err);
-		// confirmFailure(viewId);
+		confirmFailure(viewId);
 	})
 	.finally(anything => {
 		// console.log('Finally handled submission....');
