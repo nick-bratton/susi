@@ -17,8 +17,8 @@ const main = async() => {
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
 		await Promise.all(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
-			.then(usersAndPayloads => {
-				mongo.store(usersAndPayloads)
+			.then(sent => {
+				mongo.insert({ date: Date().toString(), messages: sent })
 			})
 	}
 	catch(err){

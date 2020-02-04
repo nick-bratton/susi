@@ -18,6 +18,7 @@
     "express": "^4.17.1",
     "forever": "^2.0.0",
     "lodash": "^4.17.15",
+    "mongodb": "^3.5.2",
     "ngrok": "^3.2.7",
     "request-promise": "^4.2.4"
   }
