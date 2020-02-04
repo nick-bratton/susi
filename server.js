@@ -387,34 +387,24 @@ let createinputBlockNotes = (suggestion, hash) => {
 }
 
 const constructInputBlocksFromPayload = async (payload) => {
-	return new Promise(async function(resolve,reject){
-		await getUserNameFromUserIdFromParsedPayload(payload)
-			.then(userName => {
-				let parsedPayload = JSON.parse(payload.actions[0].value);
-				let greetingBlock = createGreetingBlock(userName);
-				let headerBlock = createHeaderBlock();
-				let footerBlock = createFooterBlock();
-				let blocks = []
-				blocks.push(greetingBlock);
-				blocks.push(headerBlock);
-				for (let suggestion of parsedPayload.suggestions){
-					let hash = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`.hashCode();
-					let suggestionLabelBlock = createSuggestionLabelBlock(suggestion, hash);
-					let inputBlockHours = createInputBlockHours(suggestion, hash);
-					let inputBlockNotes = createinputBlockNotes(suggestion, hash);
-					blocks.push(suggestionLabelBlock);
-					blocks.push(inputBlockHours);
-					blocks.push(inputBlockNotes);
-				}
-				blocks.push(footerBlock);
-				resolve(blocks);
-			})
-			.catch(err => {
-				console.log('Error in constructInputBlocksFromPayload(): ' + err);
-			})
-			.finally(function(){
-			})
-	})
+	try{
+		let userName = await getUserNameFromUserIdFromParsedPayload(payload);
+		let parsedPayload = JSON.parse(payload.actions[0].value);
+		let blocks = [];
+		blocks.push(createGreetingBlock(userName));
+		blocks.push(createHeaderBlock());
+		for (let suggestion of parsedPayload.suggestions){
+			let hash = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`.hashCode();
+			blocks.push(createSuggestionLabelBlock(suggestion, hash));
+			blocks.push(createInputBlockHours(suggestion, hash));
+			blocks.push(createinputBlockNotes(suggestion, hash));
+		}
+		blocks.push(createFooterBlock());
+		return blocks;
+	}
+	catch(err){
+		throw new Error(err);
+	}
 }
 
 const getUserNameFromUserIdFromParsedPayload = async(payload) => {
