@@ -3,13 +3,9 @@
 require('dotenv').config()
 
 const Cron = require('cron').CronJob;
-// const tenK = require('./services/tenK.js');
+const tenK = require('./services/tenK.js');
 const mongo = require('./services/mongo.js')
-const tenK = require('./services/tenK.dev.js');
-
 const slack = require('./services/slack.js');
-
-let interval = '0 10 * * MON';
 
 const main = async() => {
 	try{
@@ -26,8 +22,11 @@ const main = async() => {
 	}
 }
 
-// new Cron(interval, function() {
-// 	main();
-// }, null, true, 'Europe/Berlin');
-
-main()
+if (process.env.MODE === 'dev'){
+	main();
+}
+else{
+	new Cron(process.env.CRON, function() {
+		main();
+	}, null, true, 'Europe/Berlin');
+}

@@ -5,7 +5,12 @@ const rp = require('request-promise');
 const slack = require('./slack.js');
 
 let baseUri = 'https://api.10000ft.com/api/v1/';
-let auth = process.env.TENK;
+let auth = process.env.TENK_TOKEN;
+
+if (process.env.MODE === 'dev'){
+	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+	auth = process.env.VNEXT_TOKEN;
+}
 
 let requestOptions = {
 	method: 'GET',

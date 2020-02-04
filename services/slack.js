@@ -1,12 +1,17 @@
 #!/usr/bin/env nodejs
 'use strict';
 require('dotenv').config()
-
 const { WebClient } = require('@slack/web-api');
-let Slack;
-Slack = new WebClient(process.env.SLACK_PRO);
-
 const whitelist = require('../whitelist.js');
+
+let Slack;
+
+if (process.env.MODE === 'dev'){
+	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN_SANDBOX);
+}
+else{
+	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN);
+}
 
 class Message {
 	constructor(channel, payload){
@@ -44,12 +49,12 @@ class Message {
 const postMessageWithPayload = async(id, _payload) => {
 	try{
 		let payload = JSON.stringify(_payload);
-		if (process.env.MODE === 'dev' || process.env.MODE === 'beta') {
+		if (process.env.MODE === 'dev') {
 			if (whitelist.devEmail.includes(_payload.emailAddress)){
 				await Slack.chat.postMessage(new Message(id, payload).message);
 			}
 		}
-		else if (process.env.MODE  === 'pro'){
+		else {
 			await Slack.chat.postMessage(new Message(id, payload).message);
 		}
 	}

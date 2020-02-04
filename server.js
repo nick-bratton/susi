@@ -2,22 +2,32 @@
 'use strict';
 require('dotenv').config()
 const express = require('express');
+const app = express();
 const bodyParser = require('body-parser');
 const rp = require('request-promise');
-const tenK = require('./services/tenK.dev.js');
-const app = express();
-const port = process.env.PORT;
-const slackAuth = process.env.SLACK_PRO;
-const slackToken = process.env.SLACK_REQUEST_VERIFICATION_TOKEN;
+const tenK = require('./services/tenK.js');
 const { WebClient } = require('@slack/web-api');
-let Slack;
-Slack = new WebClient(process.env.SLACK_PRO);
+
+let port, slackAuth, slackToken, Slack;
+
+if(process.env.MODE === 'dev'){
+	port = process.env.PORT_SANDBOX;
+	slackAuth = process.env.SLACK_OAUTH_TOKEN_SANDBOX;
+	slackToken = process.env.SLACK_SANDBOX_REQUEST_VERIFICATION_TOKEN;
+}
+else{
+	port = process.env.PORT;
+	slackAuth = process.env.SLACK_OAUTH_TOKEN;
+	slackToken = process.env.SLACK_REQUEST_VERIFICATION_TOKEN;
+}
+
+Slack = new WebClient(slackAuth);
 
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
 app.post('/', urlEncodedParser, async(req, res) => {
 	let payload = JSON.parse(req.body.payload);
-	let verified = payload.token == slackToken && payload.token != null && payload.token != undefined;
+	let verified = payload.token == slackToken && payload.token != null && payload.token !== undefined;
 	try {
 		switch (payload.type){
 			case 'block_actions':

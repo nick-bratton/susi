@@ -5,8 +5,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "MODE=dev node --trace-warnings app.js",
-    "pro": "MODE=pro node app.js",
-    "beta": "MODE=beta node app.js"
+    "pro": "MODE=pro node app.js"
   },
   "author": "Nick Bratton",
   "license": "ISC",

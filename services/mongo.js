@@ -3,7 +3,7 @@ const MongoClient = require('mongodb').MongoClient;
 
 getClient = async() => {
 	try{
-		const client = new MongoClient(`${process.env.MONGOURL}`, {
+		const client = new MongoClient(`${process.env.MONGO_URL}`, {
 			useUnifiedTopology: true
 		});
 		return await client.connect();
