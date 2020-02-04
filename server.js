@@ -102,21 +102,17 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 	}
 }
 
-const handleSubmission = async(payload, viewId, res) => {
-	let reqBodies = tenK.constructPostBodies(payload);
-	let id = await tenK.getUserIdFromUserEmail(payload);
-	await tenK.postSubmissions(reqBodies, id)
-	.then(async value => {
-		await confirmSuccess(viewId).then(async successResponse => {
-			await deleteConfirmButtonInOriginalMessage(payload.view.private_metadata)
-		})
-	})
-	.catch(err => {
-		confirmFailure(viewId);
-	})
-	.finally(anything => {
-		// console.log('Finally handled submission....');
-	})
+const handleSubmission = async(payload, viewId) => {
+	try{
+		let reqBodies = tenK.constructPostBodies(payload);
+		let id = await tenK.getUserIdFromUserEmail(payload);
+		await tenK.postSubmissions(reqBodies, id);
+		await confirmSuccess(viewId);
+		await deleteConfirmButtonInOriginalMessage(payload.view.private_metadata);
+	}
+	catch(err){
+		confirmFailure(viewId)
+	}
 }
 
 const confirmSuccess = async(viewId) => {
