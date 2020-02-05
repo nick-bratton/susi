@@ -13,6 +13,11 @@ else{
 	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN);
 }
 
+/**
+ * @desc returns object for api.slack.com/methods/chat.postMessage
+ * @param $string - channel - ID of user to send direct message to.
+ * @param	$object - payload - Contains modal content to be rendered on click
+ */
 class Message {
 	constructor(channel, payload){
 		this.message = {
@@ -46,6 +51,12 @@ class Message {
 	}
 }
 
+/**
+ * @desc stringifies payload and promises Slack.chat.postMessage() 
+ * @param $string - id				- ID of user to send direct message to.
+ * @param $object - _payload	- Contains modal content to be rendered on click.
+ * @returns new Promise 
+ */
 const postMessageWithPayload = async(id, _payload) => {
 	try{
 		let payload = JSON.stringify(_payload);
@@ -63,6 +74,11 @@ const postMessageWithPayload = async(id, _payload) => {
 	}
 }
 
+/**
+ * @desc messages Slack user with payload.emailAddress and returns payload and user info to be stored in Mongo database
+ * @param $object - payload - Contains modal content to be rendered on click.
+ * @returns object
+ */
 exports.messageUserAndReturnPayload = async(payload) => {
 	try{
 		let user = await Slack.users.lookupByEmail({email: `${payload.emailAddress}`});
@@ -83,6 +99,11 @@ exports.messageUserAndReturnPayload = async(payload) => {
 	}
 }
 
+/**
+ * @desc gets email address of Slack profile linked to passed-in user ID
+ * @param $string userId 	- Slack user ID
+ * @return Promise (resolves to a string)
+ */
 exports.getUserEmailAddressFromUserId = async(userId) => {
 	try{
 		let userInfo = await Slack.users.info({user: `${userId}`});
