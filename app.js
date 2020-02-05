@@ -26,7 +26,7 @@ if (process.env.MODE === 'dev'){
 	main();
 }
 else{
-	new Cron(process.env.CRON, function() {
+	new Cron(process.env.CRON, () => {
 		main();
 	}, null, true, 'Europe/Berlin');
 }
