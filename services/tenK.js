@@ -53,6 +53,12 @@ let uriToCheckWeeklyTimeEntries = () => {
 	return uri;
 }
 
+
+/**
+ * @desc 		Gets email address associated with ID
+ * @param 	String id 		(10000Ft. user ID)
+ * @return	new Promise		(Resolves to String)
+ */
 const getUserEmailFrom10KUserID = async(id) => {
 	try {
 		let options = requestOptions;
@@ -66,12 +72,23 @@ const getUserEmailFrom10KUserID = async(id) => {
 	}
 }
 
+
+/**
+ * @desc 		Gets array of all IDs (without duplicates) from passed-in time entries
+ * @param 	Array weeklyEntries 
+ * @return 	Array
+ */
 const getActiveIds = (weeklyEntries) => {
 	let unfilteredIds = weeklyEntries.map(entry => entry.user_id);
 	let filteredIds = new Set(unfilteredIds);
 	return Array.from(filteredIds);
 }
 
+/**
+ * @desc 		Returns object of passed-in time entries keyed by whether or not they are confirmations
+ * @param 	Array weeklyEntries
+ * @return	Object
+ */
 const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	let weeklySuggestions = weeklyEntries.filter(entry => entry.is_suggestion === true);
 	let weeklyConfirmations = weeklyEntries.filter(entry => entry.is_suggestion === false);
@@ -144,8 +161,8 @@ const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
 }
 
 /**
- * @desc requests all time entries from endpoint returned by uriToCheckWeeklyTimeEntries()
- * @return Promise (resolves to parsed body.data JSON object)
+ * @desc 		Requests all time entries from endpoint returned by uriToCheckWeeklyTimeEntries()
+ * @return 	Promise (Resolves to parsed body.data JSON object)
  */
 exports.getWeeklyEntries = async() => {
 	try{ 
@@ -161,10 +178,10 @@ exports.getWeeklyEntries = async() => {
 }
 
 /**
- * @desc Generates payloads containing unconfirmed time entries per user that the slack.js service will send to team members
- * @param $object - allWeeklyEntries							- All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries()
- * @param $object - unconfirmedEntryIdentifiers		- Unconfirmed time entries returned by getUnconfirmedEntryIdentifiers()
- * @return new Promise (resolves to Array containing n {emailAddress, suggestions} objects)
+ * @desc 		Generates payloads containing unconfirmed time entries per user that the slack.js service will send to team members
+ * @param 	Object allWeeklyEntries								(All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries())
+ * @param 	Object unconfirmedEntryIdentifiers		(Unconfirmed time entries returned by getUnconfirmedEntryIdentifiers())
+ * @return 	new Promise 													(Resolves to Array containing n {emailAddress, suggestions} objects)
  */
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
 	try{
@@ -191,9 +208,9 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 }
 
 /**
- * @desc Returns an array of suggested time entries for which there are no correlated confirmed time entries
- * @param $object - weeklyEntries - All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries()
- * @return Array (of time entries that meet these conditions: 1. have a true "suggestion" prop; 2. have no correlated entry with false "suggestion" prop)
+ * @desc 		Returns an array of suggested time entries for which there are no correlated confirmed time entries
+ * @param 	Object weeklyEntries 		(All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries())
+ * @return 	Array 									(Of time entries that meet these conditions: 1. have a true "suggestion" prop; 2. have no correlated entry with false "suggestion" prop)
  */
 exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
@@ -209,9 +226,9 @@ exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 }
 
 /**
- * @desc Returns 10000Ft user ID from email address associated with passed in Slack user ID
- * @param $string - slackId - Slack user ID
- * @return new Promise (resolves to String)
+ * @desc 		Returns 10000Ft user ID from email address associated with passed-in Slack user ID
+ * @param 	String slackId 			(Slack user ID)
+ * @return 	new Promise 				(Resolves to String)
  */
 exports.getUserIdFromUserEmail = async(slackId) => {
 	try{
@@ -232,9 +249,9 @@ exports.getUserIdFromUserEmail = async(slackId) => {
 }
 
 /**
- * @desc Constructs HTTP body from Slack modal user input payload; to be POST-ed in postSubmissions()
- * @param $object - payload - Payload defining time entry as submitted by user via Slack modal
- * @return Object (with props: assignable_id, date, hours, notes)
+ * @desc 		Constructs HTTP body from Slack modal user input payload; to be POST-ed in postSubmissions()
+ * @param 	Object payload 		(Payload defining time entry as submitted by user via Slack modal)
+ * @return 	Object 						({assignable_id: String, date: String, hours: String, notes: String})
  */
 const constructBodyForPOSTRequest = (payload) => {
 	let body = { 'hours': `${payload.hours}`, 'notes': `${payload.notes}` };
@@ -248,9 +265,9 @@ const constructBodyForPOSTRequest = (payload) => {
 }
 
 /**
- * @desc Returns HTTP bodies for use as 1st arg to postSubmissions(); see spec at https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md
- * @param $object - payload - Payload containing user submitted data linked to Slack modal blocks
- * @return Array (of one HTTP body per time entry submitted by a user via Slack modal)
+ * @desc 		Returns HTTP bodies for use as 1st arg to postSubmissions(); see spec at https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md
+ * @param 	Object payload 		(Payload containing user submitted data linked to Slack modal blocks)
+ * @return 	Array 						(Of one HTTP body per time entry submitted by a user via Slack modal)
  */
 exports.constructPostBodies = (payload) => {
 	let postBodies = [];
@@ -296,6 +313,13 @@ exports.constructPostBodies = (payload) => {
 	return postBodies;
 }
 
+
+/**
+ * @desc 		Makes a POST request to 10000Ft. to a user's time entries
+ * @param 	Array bodies			(An array of objects per entry to submit as defined by spec here: https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md)
+ * @param 	String id 				(User's 10000Ft. ID)
+ * @return 	new Promise
+ */
 exports.postSubmissions = async(bodies, id) => {
 	let options = requestOptions;
 	options.uri = `${baseUri}users/${id}/time_entries`;
@@ -312,6 +336,11 @@ exports.postSubmissions = async(bodies, id) => {
 	}
 }
 
+/**
+ * @desc 		Gets name of project (or other type of assignable) by its assignable ID
+ * @param 	String assignableId		(https://github.com/10Kft/10kft-api/blob/master/sections/assignables.md)
+ * @return 	new Promise 					(resolves to String representation of assignable; e.g., project name)
+ */
 exports.getAssignableNameFromAssignableId = async(assignableId) => {
 	try{
 		let options = requestOptions;
