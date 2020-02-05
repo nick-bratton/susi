@@ -1,13 +1,5 @@
 [
 	{
-		"uid": "tunnel",
-		"append": true,
-		"watch": true,
-		"script": "services/ngrok.js",
-    "sourceDir": ".",
-    "workingDir": ".."
-	},
-	{
 		"uid": "server",
 		"append": true,
 		"watch": true,

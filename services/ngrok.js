@@ -15,16 +15,6 @@ const runTunnel = async() => {
 					runTunnel();
 				}
 			}
-		}, {
-			authtoken: process.env.NGROK_TOKEN,
-			proto: 'http',
-			addr: process.env.PORT_SANDBOX,
-			subdomain: process.env.NGROK_SUBDOMAIN_SANDBOX,
-			onStatusChange: status => {
-				if(status == 'closed'){
-					runTunnel();
-				}
-			}
 		})
 	}
 	catch(err){
@@ -32,4 +22,6 @@ const runTunnel = async() => {
 	}
 }
 
-runTunnel();
+runTunnel().catch(err => {
+	throw new Error(err);
+})
