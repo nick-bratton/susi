@@ -15,6 +15,8 @@ else {
 	auth = process.env.TENK_TOKEN;
 }
 
+
+
 let requestOptions = {
 	method: 'GET',
 	resolveWithFullResponse: true,
@@ -26,6 +28,8 @@ let requestOptions = {
 	},
 }
 
+
+
 let yesterday = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
@@ -35,6 +39,8 @@ let yesterday = () => {
 	if (day.length < 2){day = '0' + day};
 	return [year, month, day].join('-');
 }
+
+
 
 let eightDaysAgo = () => {
 	let d = new Date(),
@@ -46,6 +52,8 @@ let eightDaysAgo = () => {
 	if (day.length < 2){day = '0' + day};
 	return [year, month, day].join('-');
 }
+
+
 
 let uriToCheckWeeklyTimeEntries = () => {
 	let uri = `${baseUri}/time_entries?from=`;
@@ -84,6 +92,8 @@ const getActiveIds = (weeklyEntries) => {
 	return Array.from(filteredIds);
 }
 
+
+
 /**
  * @desc 		Returns object of passed-in time entries keyed by whether or not they are confirmations
  * @param 	Array weeklyEntries
@@ -95,20 +105,28 @@ const getWeeklySuggestionsAndConfirmations = (weeklyEntries) => {
 	return { suggestions: weeklySuggestions, confirmations: weeklyConfirmations }
 }
 
+
+
 const getWeekdayFromYYYYMMDD = (yyyymmdd) => {
 	let weekday = new Date(yyyymmdd).getDay();
 	return isNaN(weekday) ? null : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][weekday];
 }
+
+
 
 const getYearFromYYYYMMDD = (yyyymmdd) => {
 	let parsed = yyyymmdd.split('-');
 	return(parsed[0]);
 }
 
+
+
 const getMonthFromYYYYMMDD = (yyyymmdd) => {
 	let parsed = yyyymmdd.split('-');
 	return(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August','September', 'October','November', 'December'][parsed[1] - 1]);
 }
+
+
 
 const getDateFromYYYYMMDD = (yyyymmdd) => {
 	let parsed = yyyymmdd.split('-');
@@ -122,6 +140,8 @@ const getDateFromYYYYMMDD = (yyyymmdd) => {
 	}
 }
 
+
+
 const makeDateReadable = (yyyymmdd) => {
 	let weekday = getWeekdayFromYYYYMMDD(yyyymmdd);
 	let year = getYearFromYYYYMMDD(yyyymmdd);
@@ -130,6 +150,8 @@ const makeDateReadable = (yyyymmdd) => {
 	let readableDate = `${weekday} ${date}. ${month} ${year}`;
 	return readableDate;
 }
+
+
 
 const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
 	let yyyymmdd;
@@ -160,6 +182,8 @@ const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
 	return yyyymmdd;
 }
 
+
+
 /**
  * @desc 		Requests all time entries from endpoint returned by uriToCheckWeeklyTimeEntries()
  * @return 	Promise (Resolves to parsed body.data JSON object)
@@ -176,6 +200,8 @@ exports.getWeeklyEntries = async() => {
 		throw new Error(err);
 	}
 }
+
+
 
 /**
  * @desc 		Generates payloads containing unconfirmed time entries per user that the slack.js service will send to team members
@@ -207,6 +233,8 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 	}
 }
 
+
+
 /**
  * @desc 		Returns an array of suggested time entries for which there are no correlated confirmed time entries
  * @param 	Object weeklyEntries 		(All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries())
@@ -224,6 +252,8 @@ exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 	}
 	return suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry)
 }
+
+
 
 /**
  * @desc 		Returns 10000Ft user ID from email address associated with passed-in Slack user ID
@@ -248,6 +278,8 @@ exports.getUserIdFromUserEmail = async(slackId) => {
 	}
 }
 
+
+
 /**
  * @desc 		Constructs HTTP body from Slack modal user input payload; to be POST-ed in postSubmissions()
  * @param 	Object payload 		(Payload defining time entry as submitted by user via Slack modal)
@@ -263,6 +295,8 @@ const constructBodyForPOSTRequest = (payload) => {
 	body.assignable_id = assignable_id;
 	return body;
 }
+
+
 
 /**
  * @desc 		Returns HTTP bodies for use as 1st arg to postSubmissions(); see spec at https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md
@@ -314,6 +348,7 @@ exports.constructPostBodies = (payload) => {
 }
 
 
+
 /**
  * @desc 		Makes a POST request to 10000Ft. to a user's time entries
  * @param 	Array bodies			(An array of objects per entry to submit as defined by spec here: https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md)
@@ -335,6 +370,8 @@ exports.postSubmissions = async(bodies, id) => {
 		}
 	}
 }
+
+
 
 /**
  * @desc 		Gets name of project (or other type of assignable) by its assignable ID

@@ -25,6 +25,12 @@ Slack = new WebClient(slackAuth);
 
 const urlEncodedParser = bodyParser.urlencoded({extended:false});
 
+
+
+/**
+ * @desc 		Only route handler of the server
+ * @return	new Promise
+ */
 app.post('/', urlEncodedParser, async(req, res) => {
 	let payload = JSON.parse(req.body.payload);
 	let verified = payload.token == slackToken && payload.token != null && payload.token !== undefined;
@@ -64,8 +70,17 @@ app.post('/', urlEncodedParser, async(req, res) => {
 	}
 })
 
+
+
 app.listen(port, () => console.log(`Listening on port ${port}!`)); 
 
+
+
+/**
+ * @desc 		Checks submitted modal hours field to make sure they're numbers between 0 and 24
+ * @param 	String value
+ * @return 	boolean
+ */
 const inputIsValid = (value) => {
 	if (value !== null && value !== undefined && value < 24 && value >= 0) {
 		return true;
@@ -73,6 +88,12 @@ const inputIsValid = (value) => {
 	return false;
 }
 
+
+/**
+ * @desc 		Checks submitted modal fields for validity and returns error messages if invalid
+ * @param 	Object payload
+ * @return 	Object
+ */
 const validateInputDataFormat = (payload) => {
 	let errors = {};
 	for (let [key, value] of Object.entries(payload.view.state.values)) {
@@ -84,6 +105,12 @@ const validateInputDataFormat = (payload) => {
 	return errors;
 }
 
+
+/**
+ * @desc 		Asks Slack to delete Confirm button in original message and to replace it with 'Thanks for using the 10K Reminder!'
+ * @param 	Object privateMetadata
+ * @return 	new Promise
+ */
 const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 	try{
 		let pm = JSON.parse(privateMetadata);
@@ -112,6 +139,13 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 	}
 }
 
+
+/**
+ * @desc		Handler for passing data from Slack to 10000Ft.
+ * @param 	Object payload 	(Data submitted from Slack modal when user clicks 'Confirm')
+ * @param 	String viewId 	(ViewId of the Slack modal)
+ * @return	new Promise			(Falls back to confirmFailure() in catch block)
+ */
 const handleSubmission = async(payload, viewId) => {
 	try{
 		let reqBodies = tenK.constructPostBodies(payload);
@@ -125,6 +159,12 @@ const handleSubmission = async(payload, viewId) => {
 	}
 }
 
+
+/**
+ * @desc 		Confirms that POST request to 10000Ft. resolved successfully; updates Slack modal view with success message
+ * @param 	String viewId
+ * @return 	new Promise
+ */
 const confirmSuccess = async(viewId) => {
 	try{
 		let options = {
@@ -177,6 +217,12 @@ const confirmSuccess = async(viewId) => {
 	}
 }
 
+
+/**
+ * @desc 		Confirms that POST request to 10000Ft failed; updates Slack modal view with failure message
+ * @param 	String viewId
+ * @return 	new Promise
+ */
 const confirmFailure = async(viewId) => {
 	try{
 		let options = {
@@ -227,6 +273,12 @@ const confirmFailure = async(viewId) => {
 	}
 }
 
+
+/**
+ * @desc 		Confirms that an HTTP request has been sent out by this server; updates Slack modal with message saying so
+ * @param 	Object res		(HTTP response object)
+ * @return 	new Promise
+ */
 const confirmSubmission = async(res) => {
 	await res.send({
 		"response_action": "update",
@@ -257,6 +309,12 @@ const confirmSubmission = async(res) => {
 	})
 }
 
+
+/**
+ * @desc 		Handles opening of Slack modal and sets private_metadata prop in body of constructed HTTP response
+ * @param 	Object requestPayload		(Contains Slack-generated metadata that we store for later in a private message prop)
+ * @return 	Object									(HTTP Response)
+ */
 const sendMessageToSlackResponseUrl = async(requestPayload) => {
 	try{
 		let privateMetadata = {
@@ -299,7 +357,7 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 				},
 			}
 		}
-		options.body.view.blocks = await constructInputBlocksFromPayload(requestPayload);
+		options.body.view.blocks = await compileModalBlocks(requestPayload);
 		let res = await rp(options);
 		return res;
 	}
@@ -307,6 +365,8 @@ const sendMessageToSlackResponseUrl = async(requestPayload) => {
 		throw new Error(err);
 	}
 }
+
+
 
 let createGreetingBlock = (userName) => {
 	return {
@@ -319,6 +379,8 @@ let createGreetingBlock = (userName) => {
 	}
 }
 
+
+
 let createHeaderBlock = () => {
 	return {
 		"type": "section",
@@ -328,6 +390,8 @@ let createHeaderBlock = () => {
 		}
 	}
 }
+
+
 
 let createFooterBlock = () => {
 	return {
@@ -339,7 +403,14 @@ let createFooterBlock = () => {
 	}
 }
 
-let createSuggestionLabelBlock = (suggestion, hash) => {
+
+/**
+ * @desc 		Creates block for modal with label containing suggestion properties: date, assignable_name, assignable_id
+ * @param 	Object suggestion		(Suggested time entry object)
+ * @param 	Object hash					(hash of string of concatanated properties of the suggestion; used as a unique identifier for Slack modal blocks)
+ * @return 	new Object					(Section-type block)
+ */
+const createSuggestionLabelBlock = (suggestion, hash) => {
 	let label = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`;
 	let blockId = 'bid' + hash + '.label';
 	blockId = blockId.replace('-', '');
@@ -353,7 +424,14 @@ let createSuggestionLabelBlock = (suggestion, hash) => {
 	}
 }
 
-let createInputBlockHours = (suggestion, hash) => {
+
+/**
+ * @desc 		Creates Slack modal input block for hours worked 
+ * @param 	Object suggestion		(Suggested time entry object)
+ * @param 	Object hash					(hash of string of concatanated properties of the suggestion; used as a unique identifier for Slack modal blocks)
+ * @return 	new Object					(Input-type block)
+ */
+const createInputBlockHours = (suggestion, hash) => {
 	let blockId = 'bid' + hash + '.hours';
 	blockId = blockId.replace('-', '');
 	return {
@@ -374,7 +452,13 @@ let createInputBlockHours = (suggestion, hash) => {
 	}
 }
 
-let createinputBlockNotes = (suggestion, hash) => {
+
+/**
+ * @desc 		Creates Slack modal input block for notes
+ * @param 	Object hash					(hash of string of concatanated properties of the suggestion; used as a unique identifier for Slack modal blocks)
+ * @return 	new Object					(Input-type block)
+ */
+const createInputBlockNotes = (hash) => {
 	let blockId = 'bid' + hash + '.notes';
 	blockId = blockId.replace('-', '');
 	return {
@@ -396,9 +480,15 @@ let createinputBlockNotes = (suggestion, hash) => {
 	}
 }
 
-const constructInputBlocksFromPayload = async (payload) => {
+
+/**
+ * @desc 		Compiles blocks needed to build Slack modal view with user-specific data
+ * @param 	Object payload		(Suggested time entry objects)
+ * @return 	new Array					(Array of blocks needed to construct Slack modal)
+ */
+const compileModalBlocks = async (payload) => {
 	try{
-		let userName = await getUserNameFromUserIdFromParsedPayload(payload);
+		let userName = await getUserNameFromSlackUserId(payload.user.id);
 		let parsedPayload = JSON.parse(payload.actions[0].value);
 		let blocks = [];
 		blocks.push(createGreetingBlock(userName));
@@ -407,7 +497,7 @@ const constructInputBlocksFromPayload = async (payload) => {
 			let hash = `${suggestion.date} ${suggestion.assignable_name} (${suggestion.assignable_id})`.hashCode();
 			blocks.push(createSuggestionLabelBlock(suggestion, hash));
 			blocks.push(createInputBlockHours(suggestion, hash));
-			blocks.push(createinputBlockNotes(suggestion, hash));
+			blocks.push(createInputBlockNotes(hash));
 		}
 		blocks.push(createFooterBlock());
 		return blocks;
@@ -417,12 +507,20 @@ const constructInputBlocksFromPayload = async (payload) => {
 	}
 }
 
-const getUserNameFromUserIdFromParsedPayload = async(payload) => {
-	let user = await Slack.users.info({user: `${payload.user.id}`});
+
+/**
+ * @desc 		Gets first name of user from Slack userId
+ * @param 	String userId
+ * @return 	new String
+ */
+const getUserNameFromSlackUserId = async(userId) => {
+	let user = await Slack.users.info({user: `${userId}`});
 	user = user.user.profile.real_name;
 	user = user.split(' ');
 	return user[0]
 }
+
+
 
 String.prototype.hashCode = function() {
 	var hash = 0, i, chr;
