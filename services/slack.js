@@ -13,10 +13,12 @@ else{
 	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN);
 }
 
+
+
 /**
- * @desc returns object for api.slack.com/methods/chat.postMessage
- * @param $string - channel - ID of user to send direct message to.
- * @param	$object - payload - Contains modal content to be rendered on click
+ * @desc 	Returns object for api.slack.com/methods/chat.postMessage
+ * @param String channel 	(ID of user to send direct message to)
+ * @param	Object payload 	(Contains modal content to be rendered on click)
  */
 class Message {
 	constructor(channel, payload){
@@ -51,10 +53,12 @@ class Message {
 	}
 }
 
+
+
 /**
- * @desc stringifies payload and promises Slack.chat.postMessage() 
- * @param $string - id				- ID of user to send direct message to.
- * @param $object - _payload	- Contains modal content to be rendered on click.
+ * @desc 		Stringifies payload and promises Slack.chat.postMessage() 
+ * @param 	String id					(ID of user to send direct message to)
+ * @param 	Object _payload		(Contains modal content to be rendered on click)
  * @returns new Promise 
  */
 const postMessageWithPayload = async(id, _payload) => {
@@ -74,10 +78,12 @@ const postMessageWithPayload = async(id, _payload) => {
 	}
 }
 
+
+
 /**
- * @desc messages Slack user with payload.emailAddress and returns payload and user info to be stored in Mongo database
- * @param $object - payload - Contains modal content to be rendered on click.
- * @returns object
+ * @desc 		Messages Slack user with payload.emailAddress and returns payload and user info to be stored in Mongo database
+ * @param 	Object payload		(Contains modal content to be rendered on click)
+ * @returns Object
  */
 exports.messageUserAndReturnPayload = async(payload) => {
 	try{
@@ -99,10 +105,12 @@ exports.messageUserAndReturnPayload = async(payload) => {
 	}
 }
 
+
+
 /**
- * @desc gets email address of Slack profile linked to passed-in user ID
- * @param $string userId 	- Slack user ID
- * @return Promise (resolves to a string)
+ * @desc 		Gets email address of Slack profile linked to passed-in user ID
+ * @param 	String userId			(Slack user ID
+ * @return 	Promise						(Resolves to a string)
  */
 exports.getUserEmailAddressFromUserId = async(userId) => {
 	try{
