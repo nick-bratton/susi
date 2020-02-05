@@ -231,6 +231,11 @@ exports.getUserIdFromUserEmail = async(slackId) => {
 	}
 }
 
+/**
+ * @desc Constructs HTTP body from Slack modal user input payload; to be POST-ed in postSubmissions()
+ * @param $object - payload - Payload defining time entry as submitted by user via Slack modal
+ * @return Object (with props: assignable_id, date, hours, notes)
+ */
 const constructBodyForPOSTRequest = (payload) => {
 	let body = { 'hours': `${payload.hours}`, 'notes': `${payload.notes}` };
 	let subLabels = payload.label.split(' ');
@@ -242,6 +247,11 @@ const constructBodyForPOSTRequest = (payload) => {
 	return body;
 }
 
+/**
+ * @desc Returns HTTP bodies for use as 1st arg to postSubmissions(); see spec at https://github.com/10Kft/10kft-api/blob/master/sections/time-entries.md
+ * @param $object - payload - Payload containing user submitted data linked to Slack modal blocks
+ * @return Array (of one HTTP body per time entry submitted by a user via Slack modal)
+ */
 exports.constructPostBodies = (payload) => {
 	let postBodies = [];
 	let entryHoursCoupledToBlockId = [];
@@ -274,9 +284,7 @@ exports.constructPostBodies = (payload) => {
 			});
 		}
 	}
-	entryLabelsCoupledToBlockId.forEach(entry => {
-		decoupledBlockIds.push(entry.block_id);
-	})
+	decoupledBlockIds = entryLabelsCoupledToBlockId.map(label => label.block_id)
 	decoupledBlockIds.forEach(id => {
 		let payload = {};
 		entryLabelsCoupledToBlockId.forEach(label => {if (label.block_id == id){payload.label = label.label;}});
