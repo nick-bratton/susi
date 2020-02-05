@@ -143,6 +143,10 @@ const constructYYYYMMDDFromReadableDate = (dateStringArray) => {
 	return yyyymmdd;
 }
 
+/**
+ * @desc requests all time entries from endpoint returned by uriToCheckWeeklyTimeEntries()
+ * @return Promise (resolves to parsed body.data JSON object)
+ */
 exports.getWeeklyEntries = async() => {
 	try{ 
 		let options = requestOptions;
@@ -156,6 +160,12 @@ exports.getWeeklyEntries = async() => {
 	}
 }
 
+/**
+ * @desc Generates payloads containing unconfirmed time entries per user that the slack.js service will send to team members
+ * @param $object - allWeeklyEntries							- All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries()
+ * @param $object - unconfirmedEntryIdentifiers		- Unconfirmed time entries returned by getUnconfirmedEntryIdentifiers()
+ * @return new Promise (resolves to Array containing n {emailAddress, suggestions} objects)
+ */
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
 	try{
 		let activeIds = getActiveIds(allWeeklyEntries);
@@ -180,6 +190,11 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 	}
 }
 
+/**
+ * @desc Returns an array of suggested time entries for which there are no correlated confirmed time entries
+ * @param $object - weeklyEntries - All time entry objects returned from endpoint returned by uriToCheckWeeklyTimeEntries()
+ * @return Array (of time entries that meet these conditions: 1. have a true "suggestion" prop; 2. have no correlated entry with false "suggestion" prop)
+ */
 exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 	let suggestionsAndConfirmations = getWeeklySuggestionsAndConfirmations(weeklyEntries);
 	const hasConfirmedEntry = (suggestion) => {
@@ -193,9 +208,14 @@ exports.getUnconfirmedEntryIdentifiers = (weeklyEntries) => {
 	return suggestionsAndConfirmations.suggestions.filter(hasConfirmedEntry)
 }
 
-exports.getUserIdFromUserEmail = async(payload) => {
+/**
+ * @desc Returns 10000Ft user ID from email address associated with passed in Slack user ID
+ * @param $string - slackId - Slack user ID
+ * @return new Promise (resolves to String)
+ */
+exports.getUserIdFromUserEmail = async(slackId) => {
 	try{
-		let userEmail = await slack.getUserEmailAddressFromUserId(payload.user.id);
+		let userEmail = await slack.getUserEmailAddressFromUserId(slackId);
 		let options = requestOptions;
 		options.uri = `${baseUri}users?per_page=1000`;
 		let res = await rp(options);

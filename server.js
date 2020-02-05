@@ -115,7 +115,7 @@ const deleteConfirmButtonInOriginalMessage = async(privateMetadata) => {
 const handleSubmission = async(payload, viewId) => {
 	try{
 		let reqBodies = tenK.constructPostBodies(payload);
-		let id = await tenK.getUserIdFromUserEmail(payload);
+		let id = await tenK.getUserIdFromUserEmail(payload.user.id);
 		await tenK.postSubmissions(reqBodies, id);
 		await confirmSuccess(viewId);
 		await deleteConfirmButtonInOriginalMessage(payload.view.private_metadata);
