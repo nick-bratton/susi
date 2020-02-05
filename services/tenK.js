@@ -304,30 +304,54 @@ const constructBodyForPOSTRequest = (payload) => {
  * @return 	Array 						(Of one HTTP body per time entry submitted by a user via Slack modal)
  */
 exports.constructPostBodies = (payload) => {
+
+	/* This function takes the values submitted by the user in the
+	various modal blocks (notes, hours, labels). Each of these
+	were constructed to have the same block_id but with a substring
+	appeneded to them identifying the type of data they store, e.g.,: 
+	
+	THIS IS NOT AN GOOD ACCURATE, JUST GETS THE POINT ACROSS:
+
+	{ id: "0123.hours",
+		value: 4
+	},
+	{ id: "0123.notes",
+		value: "Writing documentation for the 10K Reminder"
+	},
+	{ id: "0123.label",
+		value: "Friday 22. Nov 2020 ProjectX (68574)"
+	}
+
+	This code below will strip the types out of the id props
+	and regroup the data into objects by matching block_ids
+	to generate the JSON bodies for POST-ing to 100000Ft. */
+
 	let postBodies = [];
 	let entryHoursCoupledToBlockId = [];
 	let entryNotesCoupledToBlockId = [];
 	let entryLabelsCoupledToBlockId = [];
 	let decoupledBlockIds = [];
+
 	for (let [key, value] of Object.entries(payload.view.state.values)) {
 		if (key.includes('hours')){
-			let strippedKey = key.substring(0, key.length - 6);
+			let strippedKey = key.substring(0, key.length - 6); // 6 removes 'hours'
 			entryHoursCoupledToBlockId.push({
 				block_id: `${strippedKey}`,
 				hours: `${value.plain_input.value}`,
 			});
 		}
 		else if (key.includes('notes')){
-			let strippedKey = key.substring(0, key.length - 6);
+			let strippedKey = key.substring(0, key.length - 6); // 6 removes 'notes'
 			entryNotesCoupledToBlockId.push({
 				block_id: `${strippedKey}`,
 				notes: `${value.plain_input.value}`,
 			});
 		}
 	}
+
 	for (let block of payload.view.blocks){
 		if (block.type == 'section' && block.block_id.includes('.label')){
-			let strippedBlockId = block.block_id.substring(0, block.block_id.length - 6);
+			let strippedBlockId = block.block_id.substring(0, block.block_id.length - 6); // 6 removes 'label'
 			let label = block.text.text.substring(1, block.text.text.length - 1);
 			entryLabelsCoupledToBlockId.push({
 				block_id: `${strippedBlockId}`,
@@ -335,15 +359,33 @@ exports.constructPostBodies = (payload) => {
 			});
 		}
 	}
+
 	decoupledBlockIds = entryLabelsCoupledToBlockId.map(label => label.block_id)
+
+	/* Take the necessary metadata for the POST to the time_entries endpoint
+	from the Slack modal data input by the user (in the case of hours, notes) and
+	from the label set by this code base (which includes the assignable_id and date properties)*/
+
 	decoupledBlockIds.forEach(id => {
 		let payload = {};
-		entryLabelsCoupledToBlockId.forEach(label => {if (label.block_id == id){payload.label = label.label;}});
-		entryHoursCoupledToBlockId.forEach(hour => {if (hour.block_id == id){payload.hours = hour.hours;}});
-		entryNotesCoupledToBlockId.forEach(note => {if (note.block_id == id){payload.notes = note.notes;}});
+		entryLabelsCoupledToBlockId.forEach(label => {if (label.block_id == id){ payload.label = label.label;} });
+		entryHoursCoupledToBlockId.forEach(hour => {if (hour.block_id == id){ payload.hours = hour.hours;} });
+		entryNotesCoupledToBlockId.forEach(note => {if (note.block_id == id){ payload.notes = note.notes;} });
 		let body = constructBodyForPOSTRequest(payload);
 		postBodies.push(body);
 	})
+
+	/* A body looks like this: 
+
+	body: {
+		user_id: 				number 	(required),
+		assignable_id: 	number 	(required),
+		hours: 					number 	(required),
+		date: 					date 		(required),
+		notes:					string	(optional),
+	} 
+
+	*/
 	return postBodies;
 }
 

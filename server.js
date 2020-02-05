@@ -36,8 +36,16 @@ app.post('/', urlEncodedParser, async(req, res) => {
 	let verified = payload.token == slackToken && payload.token != null && payload.token !== undefined;
 	try {
 		switch (payload.type){
+			//// 
+			/// cases: 
+			//  block_actions: user clicks "Confirm Now" button in message to open the modal
+			//  view_submission: user clicks "Submit" button in modal
+			//
 			case 'block_actions':
 				if (verified){
+					// must respond in less than 3 seconds (forwarding back the sent
+					// trigger_id) in order to open the modal
+					// see here: https://api.slack.com/surfaces/modals/using#opening_modals
 					res.sendStatus(200);
 					await sendMessageToSlackResponseUrl(payload);
 				}
@@ -56,7 +64,7 @@ app.post('/', urlEncodedParser, async(req, res) => {
 					}
 					else {
 						await confirmSubmission(res);
-						handleSubmission(payload, payload.view.id, res);
+						handleSubmission(payload, payload.view.id);
 					}
 				}
 				else{
