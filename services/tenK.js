@@ -33,7 +33,7 @@ let requestOptions = {
 let yesterday = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
-	day = '' + d.getDate() - 2, // was -1, -2 for demo
+	day = '' + d.getDate() - 1,
 	year = d.getFullYear();
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
