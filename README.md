@@ -4,7 +4,7 @@ Susi is a middleware (so-to-say) for [Slack](https://slack.com) and [10000ft](ht
   * directly message employees when they have unconfirmed time entries
   * provide an interactive modal through which they can view their suggested time entries and confirm them, or alter them and then confirm them, all without ever having to leave Slack.
 
-The structure of this repository is one main script (`app.js`), one internal API (`server.js`), a few service scripts in the *services* directory for interacting with the Slack and 10000ft APIs (respectively, `slack.js` and `tenK.js`) and for tunneling HTTP requests (`ngrok.js`) from Slack to our API. In addition, the *forever* directory contains a config file for the Node process manager [forever](https://www.npmjs.com/package/forever). 
+The structure of this repository is one main script (`app.js`), one internal API (`server.js`), and a few service scripts in the *services* directory for interacting with the Slack and 10000ft APIs (respectively, `slack.js` and `tenK.js`). In addition, the *forever* directory contains a config file for the Node process manager [forever](https://www.npmjs.com/package/forever). 
 
 # Table of Contents
 
@@ -45,15 +45,15 @@ The `.env` file contains your service authorization tokens. You will need to add
 
 ## whitelist.js
 
-The `whitelist.js` exports an array of email addresses that will be used to define which members of the Slack workspace will receive notifications upon the script's execution. Note this only has an effect if the launch mode is `dev` or `beta`. In the production launch mode, no whitelist is configured to be used.
+The `whitelist.js` exports an array of email addresses that will be used to define which members of the Slack workspace will receive notifications upon the script's execution. Note this only has an effect if the launch mode is `dev`.
 
 ## cron (app.js)
 
-Cron is used to schedule execution of the `main()` function in `app.js`. The Cron job runs on Berlin time by default.
+Cron is used to schedule execution of the `main()` function in `app.js`. The interval can be set in .env
 
 ## forever/config.json
 
-This file contains configuration for the Node process manager forever. You need to change the name of this file from `config.example.json` to `config.json` after cloning.
+This file contains configuration for the Node process manager forever. You need to change the name of this file from `config.example.json` to `config.json` after cloning. Note that running in `dev` mode does not start any forever-ized processes.
 
 # Launch
 
@@ -105,20 +105,27 @@ Please cross-reference what you read below with the current [Issues](https://git
 * [Handling Pagination](#handling-pagination)
 * [Handling Errors](#handling-errors)
 * [Upgrading Slack Authorization Paradigm](#upgrading-slack-authorization-paradigm)
-* [Refactoring Calls To Slack API](#refactoring-calls-to-slack-api)
+* [Write Fallback for Non-Matching 10000Ft and Slack Email Addresses](#write-fallback-for-non-matching-10000Ft-and-slack-email-addresses)
+* [Remove ngrok NPM Package](#remove-ngrok-npm-package)
 
 ## Handling Pagination
 
-[Paginated responses](https://github.com/10Kft/10kft-api/blob/master/sections/first-things-first.md#pagination) from 10000ft are not currently handled. For the time being, when requesting Time Entries from their API, the `per_page` parameter is set in the HTTP request URI to 500: `"&per_page=500"`.
+[Paginated responses](https://github.com/10Kft/10kft-api/blob/master/sections/first-things-first.md#pagination) from 10000ft are not currently handled. For the time being, when requesting Time Entries from their API, the `per_page` parameter is set in the HTTP request URI to 500: `"&per_page=1000"`.
 
 ## Handling Errors
 
-Errors should be caught and thrown at this point, but retrying should be implemented. 
+Errors are caught and new Errors are thrown, but retrying should be implemented. 
 
 ## Upgrading Slack Authorization Paradigm
 
-As mentioned above, token authorization is 'outmoded'. Slack now recommends [using signed-secrets](https://api.slack.com/docs/verifying-requests-from-slack). 
+As mentioned above, token authorization is 'outmoded'. Slack now recommends [using signed-secrets](https://api.slack.com/docs/verifying-requests-from-slack).
 
-## Refactoring Calls to Slack API
+## Write Fallback for Non-Matching 10000Ft and Slack Email Addresses
 
-Calls to the Slack API happen in both `slack.js` and `server.js`. When possible, this functionality should be compartamentalized. Exports should be used to make these calls from the `server.js`.
+At this point, Slack profiles and 10000Ft profiles are linked by matching email addresses. If these do not match, errors will be caught and thrown and messages will not go out, because the code will not find a recipient. Fallbacks (perhaps in a `finally` block wrapping `tenK.constructPayloads`) should handle this case and do...?
+
+A config file could also be supplemented by an organization wishing to implement this bot, containing the a list of users and the email addresses associated with their Slack and 10000Ft accounts.
+
+## Remove ngrok NPM Package
+
+At this point, the ngrok NPM package is still listed as a dependency in the package.json. This is no longer needed, and actually never was. It is unnecessary to couple the configuration of a physical server within this code base. That will be left open to whoever wants to implement this bot. For what it's worth, the developer of this repository uses ngrok to expose ports on an Ubuntu VM.
