@@ -33,7 +33,7 @@ let requestOptions = {
 let yesterday = () => {
 	let d = new Date(),
 	month = '' + (d.getMonth() + 1),
-	day = '' + d.getDate() - 1,
+	day = '' + d.getDate() - 2, // was -1, -2 for demo
 	year = d.getFullYear();
 	if (month.length < 2){month = '0' + month};
 	if (day.length < 2){day = '0' + day};
@@ -221,7 +221,7 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 					suggestion.date = makeDateReadable(suggestion.date);
 					suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	
 				}
-				if (emailAddress !== '' && emailAddress !== null && emailAddress !== undefined && ( emailAddress.includes('@ixds.com') || emailAddress.includes('@ixds.de'))){
+				if (emailAddress !== '' && emailAddress !== null && emailAddress !== undefined){
 					payloads.push({'emailAddress': emailAddress, 'suggestions': suggestedTimeEntriesWithThisUserId})
 				}
 			}
