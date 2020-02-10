@@ -12,16 +12,9 @@ const main = async() => {
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
-
 		Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
 			.then(results => {
 				results.forEach(result => {
-					console.log({
-						date: Date().toString(),
-						recipient: result.value.user,
-						payload: result.value.payload,
-						success: result.status == 'fulfilled'
-					});
 					mongo.insert({
 						date: Date().toString(),
 						recipient: result.value.user,
