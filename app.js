@@ -18,22 +18,18 @@ const main = async() => {
 				results.forEach(result => {
 					console.log({
 						date: Date().toString(),
-						recipient: result.user,
-						payload: result.payload,
-						success: result.status
-					})
+						recipient: result.value.user,
+						payload: result.value.payload,
+						success: result.status == 'fulfilled'
+					});
 					mongo.insert({
 						date: Date().toString(),
-						recipient: result.user,
-						payload: result.payload,
-						success: result.status
+						recipient: result.value.user,
+						payload: result.value.payload,
+						success: result.status == 'fulfilled'
 					})
 				})
 			})
-		// await Promise.all(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
-		// 	.then(sent => {
-		// 		mongo.insert({ date: Date().toString(), messages: sent })
-		// 	})
 	}
 	catch(err){
 		throw new Error(err);
