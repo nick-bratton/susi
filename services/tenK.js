@@ -221,7 +221,7 @@ exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers)
 					suggestion.date = makeDateReadable(suggestion.date);
 					suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	
 				}
-				if (emailAddress !== '' && emailAddress !== null && emailAddress !== undefined){
+				if (emailAddress !== '' && emailAddress !== null && emailAddress !== undefined && ( emailAddress.includes(process.env.DOMAIN_1) || emailAddress.includes(process.env.DOMAIN_2)) ){
 					payloads.push({'emailAddress': emailAddress, 'suggestions': suggestedTimeEntriesWithThisUserId})
 				}
 			}
