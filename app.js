@@ -12,10 +12,28 @@ const main = async() => {
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
-		await Promise.all(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
-			.then(sent => {
-				mongo.insert({ date: Date().toString(), messages: sent })
+
+		Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
+			.then(results => {
+				results.forEach(result => {
+					console.log({
+						date: Date().toString(),
+						recipient: result.user,
+						payload: result.payload,
+						success: result.status
+					})
+					mongo.insert({
+						date: Date().toString(),
+						recipient: result.user,
+						payload: result.payload,
+						success: result.status
+					})
+				})
 			})
+		// await Promise.all(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
+		// 	.then(sent => {
+		// 		mongo.insert({ date: Date().toString(), messages: sent })
+		// 	})
 	}
 	catch(err){
 		throw new Error(err);
@@ -27,6 +45,6 @@ if (process.env.MODE === 'dev'){
 }
 else{
 	new Cron(process.env.CRON, () => {
-		main();
+		main()
 	}, null, true, 'Europe/Berlin');
 }
