@@ -101,7 +101,10 @@ exports.messageUserAndReturnPayload = async(payload) => {
 		}
 	}
 	catch(err){
-		throw new Error(err);
+		throw {
+			err: new Error(err),
+			user: payload.emailAddress
+		};
 	}
 }
 

@@ -7,6 +7,10 @@ const tenK = require('./services/tenK.js');
 const mongo = require('./services/mongo.js')
 const slack = require('./services/slack.js');
 
+const valueExists = (result) => {
+	return result.value !== undefined
+}
+
 const main = async() => {
 	try{
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
@@ -17,9 +21,10 @@ const main = async() => {
 				results.forEach(result => {
 					mongo.insert({
 						date: Date().toString(),
-						recipient: result.value.user,
-						payload: result.value.payload,
-						success: result.status == 'fulfilled'
+						recipient: result.value !== undefined ? result.value.user : null,
+						payload: result.value !== undefined ? result.value.payload : null,
+						success: result.status == 'fulfilled',
+						reason: result.value !== undefined ? null : result.reason
 					})
 				})
 			})
