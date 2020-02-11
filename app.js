@@ -7,10 +7,6 @@ const tenK = require('./services/tenK.js');
 const mongo = require('./services/mongo.js')
 const slack = require('./services/slack.js');
 
-const valueExists = (result) => {
-	return result.value !== undefined
-}
-
 const main = async() => {
 	try{
 		let allWeeklyEntries = await tenK.getWeeklyEntries();

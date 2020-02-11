@@ -310,7 +310,7 @@ exports.constructPostBodies = (payload) => {
 	were constructed to have the same block_id but with a substring
 	appeneded to them identifying the type of data they store, e.g.,: 
 	
-	THIS IS NOT AN GOOD ACCURATE, JUST GETS THE POINT ACROSS:
+	THIS IS NOT ACCURATE, JUST GETS THE POINT ACROSS:
 
 	{ id: "0123.hours",
 		value: 4
