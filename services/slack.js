@@ -4,25 +4,30 @@ require('dotenv').config()
 const { WebClient } = require('@slack/web-api');
 const whitelist = require('../whitelist.js');
 
+
+
 let Slack;
 
-// if (process.env.MODE === 'dev'){
-// 	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN_SANDBOX);
-// }
-// else{
+
+
+if (process.env.MODE === 'dev'){
+	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN_SANDBOX);
+}
+else{
 	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN);
-// }
+}
 
 
 
 /**
  * @desc 	Returns object for api.slack.com/methods/chat.postMessage
  * @param String channel 	(ID of user to send direct message to)
+ * @param String name		 	(name of user or placeholder if no info is provided)
  * @param	Object payload 	(Contains modal content to be rendered on click)
  */
-class Message {
-	constructor(channel, payload){
-		this.message = {
+class RichMessage {
+	constructor(channel, name, payload){
+		return this.message = {
 			"channel": channel,
 			"as_user": true,
 			"blocks": [
@@ -30,7 +35,7 @@ class Message {
 					"type": "section",
 					"text": {
 						"type": "mrkdwn",
-						"text": "Please confirm your hours on 10000ft"
+						"text": `Good morning ${name}, you have unconfirmed time entries last week.`
 					}
 				},
 				{
@@ -56,31 +61,58 @@ class Message {
 
 
 /**
+ * @desc 	Returns object for api.slack.com/methods/chat.postMessage
+ * @param String channel 	(ID of user to send direct message to)
+ * @param String name		 	(name of user or placeholder if no info is provided)
+ */
+class Message {
+  constructor(channel, name){
+		return this.message = {
+			"channel": channel,
+			"as_user": true,
+			"blocks": [
+				{
+					"type": "section",
+					"text": {
+						"type": "mrkdwn",
+						"text": `Good morning ${name}, you have more than 5 unconfirmed entries last week. \n I can't help you here, but I can forward you to *<https://app.10000ft.com/me|10000Ft>*. Have a great week!.`
+					}
+				},
+			]
+		}
+	}
+}
+
+
+
+/**
  * @desc 		Stringifies payload and promises Slack.chat.postMessage() 
  * @param 	String id					(ID of user to send direct message to)
  * @param 	Object _payload		(Contains modal content to be rendered on click)
  * @returns new Promise 
  */
-const postMessageWithPayload = async(id, _payload) => {
-	// console.log()
-	let payload;
+const postMessageWithPayload = async(user, payload) => {
+  let id = user.user.id;
+  let name = user.user.profile.first_name !== null && user.user.profile.first_name != undefined && user.user.profile.first_name !== '' ? user.user.profile.first_name : 'you';
+  let lengthOfSuggestions = payload.suggestions.length;
+  let msg = lengthOfSuggestions < 6 ? new RichMessage(id, name, JSON.stringify(payload)) : new Message(id, name);
 	try{
-		payload = JSON.stringify(_payload);
 		if (process.env.MODE === 'dev') {
-			if (whitelist.devEmail.includes(_payload.emailAddress)){
-				await Slack.chat.postMessage(new Message(id, payload).message);
+			if (whitelist.devEmail.includes(payload.emailAddress)){
+        await Slack.chat.postMessage(msg);
 			}
 		}
 		else {
-			await Slack.chat.postMessage(new Message(id, payload).message);
+      await Slack.chat.postMessage(msg);
 		}
 	}
 	catch(err){
 		throw  {
-			err: 	new Error(err),
-			source: 'postMessageWithPayload',
-			id: id,
-			_payload: payload
+			err: new Error(err),
+			meta: {
+				user: user,
+				payload: payload
+			},
 		};
 	}
 }
@@ -95,7 +127,7 @@ const postMessageWithPayload = async(id, _payload) => {
 exports.messageUserAndReturnPayload = async(payload) => {
 	try{
 		let user = await Slack.users.lookupByEmail({email: `${payload.emailAddress}`});
-		await postMessageWithPayload(user.user.id, payload);
+		await postMessageWithPayload(user, payload);
 		return {
 			user: {
 				id: user.user.id,
@@ -108,11 +140,12 @@ exports.messageUserAndReturnPayload = async(payload) => {
 		}
 	}
 	catch(err){
-		console.log(err);
 		throw {
 			err: new Error(err),
-			payload: payload,
-			user: user
+			meta: {
+				function: 'slack.messageUserAndReturnPayload',
+				payload: payload
+			},
 		};
 	}
 }
@@ -130,6 +163,12 @@ exports.getUserEmailAddressFromUserId = async(userId) => {
 		return userInfo.user.profile.email;
 	}
 	catch(err){
-		throw new Error(err);
+		throw {
+			err: new Error(err),
+			meta: {
+				function: 'slack.getUserEmailAddressFromUserID',
+				userId: userId,
+			}
+		}
 	}
 }
