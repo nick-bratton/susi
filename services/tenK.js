@@ -86,7 +86,7 @@ const getUserEmailFrom10KUserID = async(id) => {
  * @param 	Array weeklyEntries 
  * @return 	Array
  */
-const getActiveIds = (weeklyEntries) => {
+exports.getActiveIds = (weeklyEntries) => {
 	let unfilteredIds = weeklyEntries.map(entry => entry.user_id);
 	let filteredIds = new Set(unfilteredIds);
 	return Array.from(filteredIds);
@@ -212,7 +212,7 @@ exports.getWeeklyEntries = async() => {
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
 	try{
 		console.log('constructing payloads');
-		let activeIds = getActiveIds(allWeeklyEntries);
+		let activeIds = this.getActiveIds(allWeeklyEntries);
 		let payloads = [];
 		for (let id of activeIds){
 			let suggestedTimeEntriesWithThisUserId = unconfirmedEntryIdentifiers.filter(identifier => identifier.user_id === id);
