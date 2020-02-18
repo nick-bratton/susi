@@ -6,12 +6,12 @@ const whitelist = require('../whitelist.js');
 
 let Slack;
 
-if (process.env.MODE === 'dev'){
-	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN_SANDBOX);
-}
-else{
+// if (process.env.MODE === 'dev'){
+// 	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN_SANDBOX);
+// }
+// else{
 	Slack = new WebClient(process.env.SLACK_OAUTH_TOKEN);
-}
+// }
 
 
 
@@ -62,8 +62,10 @@ class Message {
  * @returns new Promise 
  */
 const postMessageWithPayload = async(id, _payload) => {
+	// console.log()
+	let payload;
 	try{
-		let payload = JSON.stringify(_payload);
+		payload = JSON.stringify(_payload);
 		if (process.env.MODE === 'dev') {
 			if (whitelist.devEmail.includes(_payload.emailAddress)){
 				await Slack.chat.postMessage(new Message(id, payload).message);
@@ -74,7 +76,12 @@ const postMessageWithPayload = async(id, _payload) => {
 		}
 	}
 	catch(err){
-		throw new Error(err);
+		throw  {
+			err: 	new Error(err),
+			source: 'postMessageWithPayload',
+			id: id,
+			_payload: payload
+		};
 	}
 }
 
@@ -101,9 +108,11 @@ exports.messageUserAndReturnPayload = async(payload) => {
 		}
 	}
 	catch(err){
+		console.log(err);
 		throw {
 			err: new Error(err),
-			user: payload.emailAddress
+			payload: payload,
+			user: user
 		};
 	}
 }

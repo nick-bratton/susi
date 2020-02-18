@@ -6,14 +6,14 @@ const slack = require('./slack.js');
 
 let baseUri, auth;
 
-if (process.env.MODE === 'dev'){
-	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
-	auth = process.env.VNEXT_TOKEN;
-}
-else {
-	baseUri = 'https://api.10000ft.com/api/v1/';
-	auth = process.env.TENK_TOKEN;
-}
+// if (process.env.MODE === 'dev'){
+// 	baseUri = 'https://vnext-api.10000ft.com/api/v1/';
+// 	auth = process.env.VNEXT_TOKEN;
+// }
+// else {
+baseUri = 'https://api.10000ft.com/api/v1/';
+auth = process.env.TENK_TOKEN;
+// }
 
 
 
@@ -211,12 +211,14 @@ exports.getWeeklyEntries = async() => {
  */
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
 	try{
+		console.log('constructing payloads');
 		let activeIds = getActiveIds(allWeeklyEntries);
 		let payloads = [];
 		for (let id of activeIds){
 			let suggestedTimeEntriesWithThisUserId = unconfirmedEntryIdentifiers.filter(identifier => identifier.user_id === id);
 			if(suggestedTimeEntriesWithThisUserId.length > 0){
 				let emailAddress = await getUserEmailFrom10KUserID(id);
+				console.log(emailAddress);
 				for (let suggestion of suggestedTimeEntriesWithThisUserId){
 					suggestion.date = makeDateReadable(suggestion.date);
 					suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	

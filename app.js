@@ -9,9 +9,12 @@ const slack = require('./services/slack.js');
 
 const main = async() => {
 	try{
+		console.log('in main')
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
+		console.log(unconfirmedEntryIdentifiers);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
+		console.log(payloads);
 		Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
 			.then(results => {
 				results.forEach(result => {
