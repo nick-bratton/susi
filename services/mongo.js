@@ -52,8 +52,8 @@ class Submission {
 	get document(){
 		return {
 			date: Date().toString(),
-			payload: payload,
-			error: error
+			payload: this.payload,
+			error: this.error
 		}
 	}
 }
