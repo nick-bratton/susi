@@ -161,9 +161,11 @@ const handleSubmission = async(payload, viewId) => {
 		await tenK.postSubmissions(reqBodies, id);
 		await confirmSuccess(viewId);
 		await deleteConfirmButtonInOriginalMessage(payload.view.private_metadata);
+		await mongo.insert(new mongo.Submission(payload, undefined))
 	}
 	catch(err){
-		confirmFailure(viewId)
+		confirmFailure(viewId);
+		await mongo.insert(new mongo.Submission(payload, err));
 	}
 }
 

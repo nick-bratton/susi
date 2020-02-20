@@ -37,14 +37,7 @@ const main = async() => {
 
 const store = async(results) => {
 	try{
-		let usersMessaged = results.length;
-		let totalUsers = tenK.getActiveIds().length;
-		await mongo.insert({
-			date: Date().toString(),
-			usersMessaged: usersMessaged,
-			totalUsers: totalUsers,
-			messages: results
-		})
+		await mongo.insert(new mongo.Message(results));
 	}
 	catch(err){
 		throw new Error(err);

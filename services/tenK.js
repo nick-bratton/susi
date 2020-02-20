@@ -211,14 +211,12 @@ exports.getWeeklyEntries = async() => {
  */
 exports.constructPayloads = async(allWeeklyEntries, unconfirmedEntryIdentifiers) => {
 	try{
-		console.log('constructing payloads');
 		let activeIds = this.getActiveIds(allWeeklyEntries);
 		let payloads = [];
 		for (let id of activeIds){
 			let suggestedTimeEntriesWithThisUserId = unconfirmedEntryIdentifiers.filter(identifier => identifier.user_id === id);
 			if(suggestedTimeEntriesWithThisUserId.length > 0){
 				let emailAddress = await getUserEmailFrom10KUserID(id);
-				console.log(emailAddress);
 				for (let suggestion of suggestedTimeEntriesWithThisUserId){
 					suggestion.date = makeDateReadable(suggestion.date);
 					suggestion.assignable_name = await this.getAssignableNameFromAssignableId(suggestion.assignable_id);	
