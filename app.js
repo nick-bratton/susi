@@ -18,14 +18,20 @@ const main = async() => {
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
 		Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
 			.then(results => {
-				return results.map(result => {
-					return {
-						recipient: result.value !== undefined ? result.value.user : null,
-						payload: result.value !== undefined ? result.value.payload : null,
-						success: result.status == 'fulfilled',
-						reason: result.value !== undefined ? null : result.reason
+				return {
+					messages: results.map(result => {
+						return {
+							recipient: result.value !== undefined ? result.value.user : null,
+							payload: result.value !== undefined ? result.value.payload : null,
+							success: result.status == 'fulfilled',
+							reason: result.value !== undefined ? null : result.reason
+						}
+					}),
+					metadata: {
+						usersMessaged: results.length,
+						totalUsers: tenK.getActiveIds(allWeeklyEntries)
 					}
-				})
+				}
 			})
 	}
 	catch(err){
@@ -35,9 +41,9 @@ const main = async() => {
 
 
 
-const store = async(results) => {
+const store = async(result) => {
 	try{
-		await mongo.insert(new mongo.Message(results));
+		await mongo.insert(new mongo.Message(result));
 	}
 	catch(err){
 		throw new Error(err);
@@ -47,14 +53,14 @@ const store = async(results) => {
 
 
 if (process.env.MODE === 'dev'){
-	main().then(results => {
-		store(results);
+	main().then(result => {
+		store(result);
 	})
 }
 else{
 	new Cron(process.env.CRON, () => {
-		main().then(results => {
-			store(results);
+		main().then(result => {
+			store(result);
 		})
 	}, null, true, 'Europe/Berlin');
 }

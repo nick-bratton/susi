@@ -22,22 +22,6 @@ getSession = async(client) => {
 	}
 }
 
-/*exports.insert = async(doc) => {
-	try{
-		let client = await getClient();
-		let session = await getSession(client);
-		await session.withTransaction(async session => {
-			const coll = client.db(`${process.env.DB}`).collection(`${process.env.COLL}`);
-			await coll.insertOne(doc, session)
-		})
-	}
-	catch(err){
-		throw new Error(err);
-	}
-}*/
-
-
-
 
 // does the callback to session need to be async actually?
 //
@@ -79,23 +63,16 @@ class Submission {
 class Message {
 	constructor(payload){
 		this.collection = 'messages';
-		this.payload = payload;
+		this.messages = payload.messages;
+		this.amtUsersMessaged = payload.metadata.usersMessaged;
+		this.totalUserCount = payload.metadata.totalUsers;
 	}
 	get document(){
-		try{
-			var usersMessaged = this.payload.length;
-			var totalUsers = tenK.getActiveIds(await tenK.getWeeklyEntries()).length;
-		}
-		catch(err){
-
-		}
-		finally{
-			return {
-				date: Date().toString(),
-				usersMessaged: usersMessaged ? usersMessaged : undefined, 
-				totalUsers: totalUsers ? totalUsers : undefined,
-				messages: this.payload
-			}
+		return {
+			date: Date().toString(),
+			usersMessaged: this.amtUsersMessaged, 
+			totalUsers: this.totalUserCount,
+			messages: this.messages
 		}
 	}
 }

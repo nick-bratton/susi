@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "dev:serve": "MODE=dev node --trace-warnings server.js",
-    "dev": "MODE=dev node --trace-warnings app.js"
+    "dev": "MODE=dev node --trace-warnings app.js",
+    "test": "jest"
   },
   "author": "Nick Bratton",
   "license": "ISC",
@@ -16,6 +17,7 @@
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
     "forever": "^2.0.0",
+    "jest": "^25.1.0",
     "lodash": "^4.17.15",
     "mongodb": "^3.5.2",
     "ngrok": "^3.2.7",
