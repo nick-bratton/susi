@@ -128,16 +128,7 @@ exports.messageUserAndReturnPayload = async(payload) => {
 	try{
 		let user = await Slack.users.lookupByEmail({email: `${payload.emailAddress}`});
 		await postMessageWithPayload(user, payload);
-		return {
-			user: {
-				id: user.user.id,
-				team_id: user.user.team_id,
-				name: user.user.profile.real_name,
-				title: user.user.profile.title,
-				email: user.user.profile.email
-			}, 
-			payload: payload
-		}
+		return formatPayload(user,payload);
 	}
 	catch(err){
 		throw {
@@ -147,6 +138,19 @@ exports.messageUserAndReturnPayload = async(payload) => {
 				payload: payload
 			},
 		};
+	}
+}
+
+const formatPayload = (user, payload) => {
+	return {
+		user: {
+			id: user.ok ? user.user.id : undefined,
+			team_id: user.ok ? user.user.team_id : undefined,
+			name: user.ok ? user.user.profile.real_name : undefined,
+			title: user.ok ? user.user.profile.title : undefined,
+			email: user.ok ?  user.user.profile.email : undefined
+		},
+		payload: payload
 	}
 }
 
