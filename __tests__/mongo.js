@@ -41,8 +41,9 @@ describe('Message', () => {
 
   it('should contain a defined metadata prop re: efficiency', () => {
     let doc = new mongo.Message(messagePayload);
-    expect(doc.document.percentUsersReminded).not.toBe(20);
+    expect(doc.document.usersMessagedByPercent).toBe(20);
   })
+
 })
 
 
