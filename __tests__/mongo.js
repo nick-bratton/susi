@@ -3,7 +3,7 @@ const mongo = require('../services/mongo');
 let messagePayload = {
   messages: [], 
   metadata: {
-    usersMessaged: 0,
+    usersMessaged: 1,
     totalUsers: 5
   }
 }
@@ -37,6 +37,11 @@ describe('Message', () => {
     };
     let doc = new mongo.Message(p);
     expect(doc.document.usersMessaged).toBe(p.messages.length);
+  })
+
+  it('should contain a defined metadata prop re: efficiency', () => {
+    let doc = new mongo.Message(messagePayload);
+    expect(doc.document.percentUsersReminded).not.toBe(20);
   })
 })
 

@@ -66,12 +66,14 @@ class Message {
 		this.messages = payload.messages;
 		this.amtUsersMessaged = payload.metadata.usersMessaged;
 		this.totalUserCount = payload.metadata.totalUsers;
+		this.usersMessagedByPercent = 100 * (payload.metadata.usersMessaged /  payload.metadata.totalUsers)
 	}
 	get document(){
 		return {
 			date: Date().toString(),
 			usersMessaged: this.amtUsersMessaged, 
 			totalUsers: this.totalUserCount,
+			usersMessagedByPercent: this.usersMessagedByPercent,
 			messages: this.messages
 		}
 	}
