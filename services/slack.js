@@ -128,7 +128,7 @@ exports.messageUserAndReturnPayload = async(payload) => {
 	try{
 		let user = await Slack.users.lookupByEmail({email: `${payload.emailAddress}`});
 		await postMessageWithPayload(user, payload);
-		return formatPayload(user,payload);
+		return formatPayload(user, payload);
 	}
 	catch(err){
 		throw {
@@ -141,6 +141,14 @@ exports.messageUserAndReturnPayload = async(payload) => {
 	}
 }
 
+
+
+/**
+ * @desc 		Formats payload as document for our MongoDB
+ * @param 	Object user				User returned by Slack.users.lookupByEmail()
+ * @param 	Object payload		Payload passed in from tenK.constructPayloads()
+ * @returns Object 
+ */
 const formatPayload = (user, payload) => {
 	return {
 		user: {
