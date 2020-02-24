@@ -19,14 +19,7 @@ const main = async() => {
 		Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
 			.then(results => {
 				return {
-					messages: results.map(result => {
-						return {
-							recipient: result.value !== undefined ? result.value.user : null,
-							payload: result.value !== undefined ? result.value.payload : null,
-							success: result.status == 'fulfilled',
-							reason: result.value !== undefined ? null : result.reason
-						}
-					}),
+					messages: results.map(result => formatMessageDocument(result)),
 					metadata: {
 						usersMessaged: results.length,
 						totalUsers: tenK.getActiveIds(allWeeklyEntries).length
@@ -36,6 +29,17 @@ const main = async() => {
 	}
 	catch(err){
 		throw new Error(err);
+	}
+}
+
+
+
+const formatMessageDocument = (payload) => {
+	return {
+		recipient: payload.value !== undefined ? payload.value.user : null,
+		payload: payload.value !== undefined ? payload.value.payload : null,
+		success: payload.status == 'fulfilled',
+		reason: payload.value !== undefined ? null : payload.reason
 	}
 }
 
