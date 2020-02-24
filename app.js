@@ -29,7 +29,7 @@ const main = async() => {
 					}),
 					metadata: {
 						usersMessaged: results.length,
-						totalUsers: tenK.getActiveIds(allWeeklyEntries)
+						totalUsers: tenK.getActiveIds(allWeeklyEntries).length
 					}
 				}
 			})

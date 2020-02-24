@@ -1,5 +1,3 @@
-const slack = require('../services/slack');
-
 const mockLookupByEmail = (error) => {
 	return new Promise( (resolve, reject) => {
 		if (error){
