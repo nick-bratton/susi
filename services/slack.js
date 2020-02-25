@@ -66,7 +66,7 @@ class RichMessage {
  * @param String name		 	(name of user or placeholder if no info is provided)
  */
 class Message {
-  constructor(channel, name){
+	constructor(channel, name){
 		return this.message = {
 			"channel": channel,
 			"as_user": true,
@@ -92,19 +92,12 @@ class Message {
  * @returns new Promise 
  */
 const postMessageWithPayload = async(user, payload) => {
-  let id = user.user.id;
-  let name = user.user.profile.first_name !== null && user.user.profile.first_name != undefined && user.user.profile.first_name !== '' ? user.user.profile.first_name : 'you';
-  let lengthOfSuggestions = payload.suggestions.length;
-  let msg = lengthOfSuggestions < 6 ? new RichMessage(id, name, JSON.stringify(payload)) : new Message(id, name);
+	let id = user.user.id;
+	let name = user.user.profile.first_name !== null && user.user.profile.first_name != undefined && user.user.profile.first_name !== '' ? user.user.profile.first_name : 'you';
+	let lengthOfSuggestions = payload.suggestions.length;
+	let msg = lengthOfSuggestions < 6 ? new RichMessage(id, name, JSON.stringify(payload)) : new Message(id, name);
 	try{
-		if (process.env.MODE === 'dev') {
-			if (whitelist.devEmail.includes(payload.emailAddress)){
-        await Slack.chat.postMessage(msg);
-			}
-		}
-		else {
-      await Slack.chat.postMessage(msg);
-		}
+		return await Slack.chat.postMessage(msg);
 	}
 	catch(err){
 		throw  {
@@ -134,7 +127,6 @@ exports.messageUserAndReturnPayload = async(payload) => {
 		throw {
 			err: new Error(err),
 			meta: {
-				function: 'slack.messageUserAndReturnPayload',
 				payload: payload
 			},
 		};
@@ -158,7 +150,7 @@ const formatPayload = (user, payload) => {
 			title: user.ok ? user.user.profile.title : undefined,
 			email: user.ok ?  user.user.profile.email : undefined
 		},
-		payload: payload
+		payload: payload,
 	}
 }
 

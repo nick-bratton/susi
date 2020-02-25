@@ -16,8 +16,10 @@ const main = async() => {
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
-		let results = await Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
-		return formatMessageDocument(results, tenK.getActiveIds(allWeeklyEntries).length)
+		return await Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
+			.then(results => {
+				return formatMessageDocument(results, tenK.getActiveIds(allWeeklyEntries).length)
+			})
 	}
 	catch(err){
 		throw new Error(err);
@@ -43,7 +45,7 @@ const formatMessagePropForMessageDocument = (payload) => {
 		recipient: payload.value !== undefined ? payload.value.user : null,
 		payload: payload.value !== undefined ? payload.value.payload : null,
 		success: payload.status == 'fulfilled',
-		reason: payload.value !== undefined ? null : payload.reason
+		reason: payload.value !== undefined ? null : payload.reason,
 	}
 }
 
@@ -51,6 +53,7 @@ const formatMessagePropForMessageDocument = (payload) => {
 
 const store = async(result) => {
 	try{
+		console.log(result);
 		await mongo.insert(new mongo.Message(result));
 	}
 	catch(err){
@@ -63,8 +66,6 @@ const store = async(result) => {
 if (process.env.MODE === 'dev'){
 	main()
 		.then(result => {
-			console.log('then after main: ')
-			console.log(result.messages[0])
 			store(result);
 		})
 		.catch(err => {
