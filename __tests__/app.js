@@ -19,18 +19,27 @@ const rejects = () => {
 
 describe('Payloads for resolutions and rejections all collected', () => {
   
-  let payloads = [resolves(), rejects()]
+  let payloads = [resolves(), rejects()];
   
   it('should resolve even if a single call to slack.messageUserAndReturnPayload rejects', () => {
-    Promise.allSettled(payloads)
+    
+    let main = Promise.allSettled(payloads)
     .then(results => {
       console.log(results)
+      // return {messages, metadata}
+      return {
+        messages: results,
+        metadata: {
+          usersMessaged: results.length,
+          totalUsers: results.length 
+        }
+      }
     })
-    .then()
+
+    console.log(main)
 
 
-    expect().toBe();
+    expect(main.length).toBe(2);
   })
-
 
 })

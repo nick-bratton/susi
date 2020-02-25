@@ -16,16 +16,8 @@ const main = async() => {
 		let allWeeklyEntries = await tenK.getWeeklyEntries();
 		let unconfirmedEntryIdentifiers = await tenK.getUnconfirmedEntryIdentifiers(allWeeklyEntries);
 		let payloads = await tenK.constructPayloads(allWeeklyEntries, unconfirmedEntryIdentifiers);
-		Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
-			.then(results => {
-				return {
-					messages: results.map(result => formatMessageDocument(result)),
-					metadata: {
-						usersMessaged: results.length,
-						totalUsers: tenK.getActiveIds(allWeeklyEntries).length
-					}
-				}
-			})
+		let results = await Promise.allSettled(payloads.map(payload => slack.messageUserAndReturnPayload(payload)))
+		return formatMessageDocument(results, tenK.getActiveIds(allWeeklyEntries).length)
 	}
 	catch(err){
 		throw new Error(err);
@@ -34,7 +26,19 @@ const main = async() => {
 
 
 
-const formatMessageDocument = (payload) => {
+const formatMessageDocument = (results, totalUsers) => {
+	return {
+		messages: results.map(result => formatMessagePropForMessageDocument(result)),
+		metadata: {
+			usersMessaged: results.length,
+			totalUsers: totalUsers
+		}
+	}
+}
+
+
+
+const formatMessagePropForMessageDocument = (payload) => {
 	return {
 		recipient: payload.value !== undefined ? payload.value.user : null,
 		payload: payload.value !== undefined ? payload.value.payload : null,
@@ -57,14 +61,24 @@ const store = async(result) => {
 
 
 if (process.env.MODE === 'dev'){
-	main().then(result => {
-		store(result);
-	})
+	main()
+		.then(result => {
+			console.log('then after main: ')
+			console.log(result.messages[0])
+			store(result);
+		})
+		.catch(err => {
+			throw new Error(err);
+		}) 
 }
 else{
 	new Cron(process.env.CRON, () => {
-		main().then(result => {
-			store(result);
-		})
+		main()
+			.then(result => {
+				store(result);
+			})
+			.catch(err => {
+				throw new Error(err);
+			}) 
 	}, null, true, 'Europe/Berlin');
 }
