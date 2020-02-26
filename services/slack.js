@@ -124,10 +124,11 @@ exports.messageUserAndReturnPayload = async(payload) => {
 		return formatPayload(user, payload);
 	}
 	catch(err){
+		let e = new Error(err);
 		throw {
-			err: new Error(err),
+			err: e.toString(),
 			meta: {
-				payload: payload
+				payload: payload,
 			},
 		};
 	}

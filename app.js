@@ -53,7 +53,6 @@ const formatMessagePropForMessageDocument = (payload) => {
 
 const store = async(result) => {
 	try{
-		console.log(result);
 		await mongo.insert(new mongo.Message(result));
 	}
 	catch(err){
