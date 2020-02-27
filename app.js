@@ -2,8 +2,6 @@
 'use strict';
 require('dotenv').config()
 
-
-
 const Cron = require('cron').CronJob;
 const tenK = require('./services/tenK.js');
 const mongo = require('./services/mongo.js')
@@ -51,21 +49,10 @@ const formatMessagePropForMessageDocument = (payload) => {
 
 
 
-const store = async(result) => {
-	try{
-		await mongo.insert(new mongo.Message(result));
-	}
-	catch(err){
-		throw new Error(err);
-	}
-}
-
-
-
 if (process.env.MODE === 'dev'){
 	main()
 		.then(result => {
-			store(result);
+			await mongo.insert(new mongo.Message(result));
 		})
 		.catch(err => {
 			throw new Error(err);
@@ -75,7 +62,7 @@ else{
 	new Cron(process.env.CRON, () => {
 		main()
 			.then(result => {
-				store(result);
+				await mongo.insert(new mongo.Message(result));
 			})
 			.catch(err => {
 				throw new Error(err);
