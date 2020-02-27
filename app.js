@@ -26,6 +26,12 @@ const main = async() => {
 
 
 
+/**
+ * @desc 		Constructs payload to pass to mogno.Message constructor
+ * @param 	Object results			(Payload passed in from mapped Promise.allSettled callback (Promises were calls to slack.messageUserAndReturnPayload))
+ * @param 	Number totalUsers		(Amount of users that had assignments on 10000ft in the observed time frame)
+ * @returns Object 
+ */
 const formatMessageDocument = (results, totalUsers) => {
 	return {
 		messages: results.map(result => formatMessagePropForMessageDocument(result)),
@@ -38,6 +44,11 @@ const formatMessageDocument = (results, totalUsers) => {
 
 
 
+/**
+ * @desc 		Formats subdocument for Mongo storage re: result of a Promised slack.messageUserAndReturnPayload
+ * @param 	Object payload		(Payload passed in from mapped Promise.allSettled callback)
+ * @returns Object 
+ */
 const formatMessagePropForMessageDocument = (payload) => {
 	return {
 		recipient: payload.value !== undefined ? payload.value.user : null,
