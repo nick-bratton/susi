@@ -28,7 +28,6 @@ to install:
 * [cron](https://www.npmjs.com/package/cron)
 * [dotenv](https://www.npmjs.com/package/dotenv)
 * [express](https://www.npmjs.com/package/express)
-* [ngrok](https://ngrok.com/)
 * [request-promise](https://www.npmjs.com/package/request-promise)
 
 Feel free to use the Yarn package manager at your own risk. There is room for improvement in terms of limiting dependencies. 
@@ -105,8 +104,6 @@ Please cross-reference what you read below with the current [Issues](https://git
 * [Handling Pagination](#handling-pagination)
 * [Handling Errors](#handling-errors)
 * [Upgrading Slack Authorization Paradigm](#upgrading-slack-authorization-paradigm)
-* [Write Fallback for Non-Matching 10000Ft and Slack Email Addresses](#write-fallback-for-non-matching-10000Ft-and-slack-email-addresses)
-* [Remove ngrok NPM Package](#remove-ngrok-npm-package)
 
 ## Handling Pagination
 
@@ -114,18 +111,8 @@ Please cross-reference what you read below with the current [Issues](https://git
 
 ## Handling Errors
 
-Errors are caught and new Errors are thrown, but retrying should be implemented. 
+Errors are caught and thrown, but retrying could be implemented. Errors are also logged into the Mongo database (as of the time of this writing, only when the error has to do with a failed Message delivery, not with a submission yet). Submission error handling is still a to-do.
 
 ## Upgrading Slack Authorization Paradigm
 
 As mentioned above, token authorization is 'outmoded'. Slack now recommends [using signed-secrets](https://api.slack.com/docs/verifying-requests-from-slack).
-
-## Write Fallback for Non-Matching 10000Ft and Slack Email Addresses
-
-At this point, Slack profiles and 10000Ft profiles are linked by matching email addresses. If these do not match, errors will be caught and thrown and messages will not go out, because the code will not find a recipient. Fallbacks (perhaps in a `finally` block wrapping `tenK.constructPayloads`) should handle this case and do...?
-
-A config file could also be supplemented by an organization wishing to implement this bot, containing the a list of users and the email addresses associated with their Slack and 10000Ft accounts.
-
-## Remove ngrok NPM Package
-
-At this point, the ngrok NPM package is still listed as a dependency in the package.json. This is no longer needed, and actually never was. It is unnecessary to couple the configuration of a physical server within this code base. That will be left open to whoever wants to implement this bot. For what it's worth, the developer of this repository uses ngrok to expose ports on an Ubuntu VM.
