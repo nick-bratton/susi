@@ -18,7 +18,7 @@
     "express": "^4.17.1",
     "forever": "^2.0.0",
     "jest": "^25.1.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "mongodb": "^3.5.2",
     "request-promise": "^4.2.4"
   }
